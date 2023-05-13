@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DetailsActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/movie_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="#201301"
+            android:textSize="50sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:hint="HINT" />
+
+        <ImageView
+            android:id="@+id/poster_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/image_poster"
+            android:scaleType="fitXY"
+            android:textAlignment="center"
+            android:transitionName="poster"
+            android:src="@drawable/favorite_pressed"
+            app:layout_constraintBottom_toTopOf="@+id/plot_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/movie_title" />
+
+        <TextView
+            android:id="@+id/plot_text"
+            style="@style/margins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/poster_image"
+            tools:text="PLOT" />
+
+        <TextView
+            android:id="@+id/rating_text"
+            style="@style/margins"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginTop="8dp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/date_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/poster_image"
+            app:layout_constraintTop_toTopOf="@+id/poster_image"
+            tools:text="RATING" />
+
+        <TextView
+            android:id="@+id/date_text"
+            style="@style/margins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/poster_image"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/poster_image"
+            app:layout_constraintTop_toBottomOf="@+id/rating_text"
+            tools:text="DATE" />
+
+        <ImageView
+            android:id="@+id/favorite_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/favorites"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="addToFavorites"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/date_text"
+            app:layout_constraintTop_toBottomOf="@+id/plot_text" />
+
+        <TextView
+            android:id="@+id/trailer_list_text"
+            style="@style/margins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/trailer_string"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/plot_text" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/trailer_list"
+            style="@style/margins"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/trailer_list_text" />
+
+        <TextView
+            android:id="@+id/review_list_text"
+            style="@style/margins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/review_string"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toTopOf="@+id/review_list"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/trailer_list" />
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/review_list"
+            style="@style/margins"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/review_list_text" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+
