@@ -1,10 +1,10 @@
-# The Movie Database Android Application
+# Movies
 
 License: MIT
 
 This is an Android Application that allows users to browse through The Movie Database using Live Data. It also includes animations, the ability to create a favorites list, and access to a demo.
 
-## Live Demo
+## Demo
 
 Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the demo.
 
@@ -29,10 +29,14 @@ You can download the application from the Google Play Store by clicking [here](h
 
 ## Screenshots
 
-![Screenshot 1](https://github.com/HatmanStack/android-movies/pics/movies.png)
-![Screenshot 2](https://github.com/HatmanStack/android-movies/pics/movies1.png)
-![Screenshot 3](https://github.com/HatmanStack/android-movies/pics/movies2.png)
-![Screenshot 4](https://github.com/HatmanStack/android-movies/pics/movies3.png)
+<table>
+  <tr>
+    <td><img src="https://github.com/HatmanStack/android-movies/blob/main/pics/movies.png" alt="Image 1"></td>
+    <td><img src="https://github.com/HatmanStack/android-movies/blob/main/pics/movies1.png" alt="Image 2"></td>
+    <td><img src="https://github.com/HatmanStack/android-movies/blob/main/pics/movies2.png" alt="Image 3"></td>
+    <td><img src="https://github.com/HatmanStack/android-movies/blob/main/pics/movies3.png" alt="Image 3"></td>
+  </tr>
+</table>
 
 ## License
 
