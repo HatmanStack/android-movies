@@ -1,8 +1,6 @@
 # Movies
 
-License: MIT
-
-This is an Android Application that allows users to browse through The Movie Database using Live Data. It also includes animations, the ability to create a favorites list, and access to a demo.
+This is an Android Application that allows users to browse through The Movie Database using Live Data. It also includes animations, the ability to create a favorites list, and trailers of the movies.
 
 ## Demo
 
@@ -14,18 +12,22 @@ You can download the application from the Google Play Store by clicking [here](h
 
 ## Features
 
-- Browse through The Movie Database using Live Data
-- Filter Database
-- Create a favorites list
-- Animations
+<ul>
+<li>Browse through The Movie Database using Live Data</li>
+<li>Filter Database</li>
+<li>Create a favorites list</li>
+<li>Animations</li>
+</ul>
 
 ## Technologies Used
 
-- Java
-- Android SDK
-- The Movie Database API
-- Picasso
-- YouTube Android Player Api
+<ul>
+<li>Java</li>
+<li>Android SDK</li>
+<li>The Movie Database API</li>
+<li>Picasso</li>
+<li>YouTube Android Player Api</li>
+</ul>
 
 ## Screenshots
 
