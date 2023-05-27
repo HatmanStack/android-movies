@@ -63,161 +63,153 @@ public class DetailsActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_details);
         favoriteButton = findViewById(R.id.favorite_button);
         ButterKnife.bind(this);
+
+        // Get movie ID and set favorite button icon
         movieID = getIntent().getIntExtra(MainActivity.MOVIE_ID, 0);
         if(getIntent().getBooleanExtra(MainActivity.IS_FAVORITE, false)){
             favoriteButton.setImageDrawable(getDrawable(R.drawable.gold));
         } else {
             favoriteButton.setImageDrawable(getDrawable(R.drawable.white));
         }
+
+        // Initialize LiveData models
         mLiveDataVideoModel = new ViewModelProvider(this).get(LiveDataVideoModel.class);
         mLiveDataReviewModel = new ViewModelProvider(this).get(LiveDataReviewModel.class);
         setLiveData();
 
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                Log.i("TAG start RUN", "GET DATA VIDEOREVIEWDETAILS");
-                List<VideoDetails> videoDetails = movieDao.getVideosDetails(movieID);
-                List<ReviewDetails> reviewDetails = movieDao.getReviewDetails(movieID);
-                if(movieDao.getVideosDetails(movieID).size() < 1){
-                    GetWebData getWebData = new GetWebData();
-                     videoDetails = getWebData.getVideoDetails(getString(R.string.moviedb_api_key),
-                            getString(R.string.google_youtube_api_key), movieID);
-                     reviewDetails = getWebData.getReviewDetails(getString(R.string.moviedb_api_key), movieID);
-                }
-                final List<VideoDetails> videoValue = videoDetails;
-                final List<ReviewDetails> reviewValue = reviewDetails;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mLiveDataVideoModel.getVideos().setValue(videoValue);
-                        mLiveDataReviewModel.getReviews().setValue(reviewValue);
-                    }
-                });
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Check if video and review details are already available in the database
+            List<VideoDetails> videoDetails = movieDao.getVideosDetails(movieID);
+            List<ReviewDetails> reviewDetails = movieDao.getReviewDetails(movieID);
+            if (videoDetails.size() < 1) {
+                // Fetch video and review details from web if not available in the database
+                GetWebData getWebData = new GetWebData();
+                videoDetails = getWebData.getVideoDetails(getString(R.string.moviedb_api_key),
+                        getString(R.string.google_youtube_api_key), movieID);
+                reviewDetails = getWebData.getReviewDetails(getString(R.string.moviedb_api_key), movieID);
             }
+
+            // Update LiveData models with the fetched details
+            final List<VideoDetails> videoValue = videoDetails;
+            final List<ReviewDetails> reviewValue = reviewDetails;
+            runOnUiThread(() -> {
+                mLiveDataVideoModel.getVideos().setValue(videoValue);
+                mLiveDataReviewModel.getReviews().setValue(reviewValue);
+            });
         });
 
+        // Create recycler views
         reviewRecycler = new ReviewRecycler();
         videoRecycler = new VideoRecycler(this, this);
         createRecycler(reviewList, "not video");
         createRecycler(trailerList, "video");
 
+        // Populate UI with movie details
         populateUI();
+
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null) {
+        if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
 
-    public void populateUI(){
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
+    // Populate UI with movie details
+    public void populateUI() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Load movie details from the database
+            movieDetails = movieDao.loadMovieID(movieID);
+            runOnUiThread(() -> {
+                // Update UI elements with movie details
+                Picasso.get()
+                        .load(MainActivity.MOVIE_DB_IMAGE_BASE + MainActivity.IMAGE_SIZE + movieDetails.getPosterPath())
+                        .noFade()
+                        .noPlaceholder()
+                        .into(imageView);
 
-                movieDetails = movieDao.loadMovieID(movieID);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Picasso.get()
-                                .load(MainActivity.MOVIE_DB_IMAGE_BASE + MainActivity.IMAGE_SIZE + movieDetails.getPosterPath())
-                                .noFade()
-                                .noPlaceholder()
-                                .into(imageView);
-
-                        plotTX.setText(movieDetails.getOverview());
-                        ratingTX.setText(movieDetails.getVoteAverage());
-                        dateTX.setText(movieDetails.getReleaseDate());
-                        movieTitle.setText(movieDetails.getTitle());
-                        if(movieDetails.isFavorite()){
-                            favoriteButton.setActivated(true);
-                        }
-                    }
-                });
-            }
+                plotTX.setText(movieDetails.getOverview());
+                ratingTX.setText(movieDetails.getVoteAverage());
+                dateTX.setText(movieDetails.getReleaseDate());
+                movieTitle.setText(movieDetails.getTitle());
+                if (movieDetails.isFavorite()) {
+                    favoriteButton.setActivated(true);
+                }
+            });
         });
     }
 
-    public void createRecycler(RecyclerView recyclerView, String type){
-
+    // Create a recycler view with the specified type
+    public void createRecycler(RecyclerView recyclerView, String type) {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        if(type.equals("video")) {
+        if (type.equals("video")) {
             recyclerView.setAdapter(videoRecycler);
         } else {
             recyclerView.setAdapter(reviewRecycler);
         }
-
     }
 
-    public void addToFavorites(View v){
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                MovieDetails movieDetails = movieDao.loadMovieID(movieID);
-                boolean favorited = false;
-                if(movieDetails.isFavorite()){
-                    movieDetails.setFavorite(false);
-
-                }else {
-                    movieDetails.setFavorite(true);
-                    favorited = true;
-                }
-                movieDao.delete(movieDetails);
-                movieDao.insertAll(movieDetails);
-                Log.i("TAG FAVORITES", " " + movieDao.loadMovieID(movieID).isFavorite());
-                final boolean imageset = favorited;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (imageset) {
-                                favoriteButton.setImageDrawable(getDrawable(R.drawable.gold));
-                            } else {
-                                favoriteButton.setImageDrawable(getDrawable(R.drawable.white));
-                            }
-                        }
-                    });
+    // Add or remove the movie from favorites
+    public void addToFavorites(View v) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Load movie details from the database
+            MovieDetails movieDetails = movieDao.loadMovieID(movieID);
+            boolean favorited = false;
+            if (movieDetails.isFavorite()) {
+                movieDetails.setFavorite(false);
+            } else {
+                movieDetails.setFavorite(true);
+                favorited = true;
             }
+            // Delete and insert movie details to update the favorite status
+            movieDao.delete(movieDetails);
+            movieDao.insertAll(movieDetails);
+            final boolean imageset = favorited;
+            runOnUiThread(() -> {
+                // Update favorite button icon
+                if (imageset) {
+                    favoriteButton.setImageDrawable(getDrawable(R.drawable.gold));
+                } else {
+                    favoriteButton.setImageDrawable(getDrawable(R.drawable.white));
+                }
+            });
         });
     }
 
+    // Handle option item selections
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        /**if(item.getItemId() == R.id.home){
-            NavUtils.navigateUpFromSameTask(this);
-        }**/
+        // Uncomment this if block if it's required to navigate up from the activity
+        // if (item.getItemId() == R.id.home) {
+        //     NavUtils.navigateUpFromSameTask(this);
+        // }
         return super.onOptionsItemSelected(item);
     }
 
+    // Handle trailer clicks
     @Override
     public void onTrailerClicked(final int clickedPosition, View v) {
-        Log.i("TAG onTrailerClicked", "START");
-        if(v.getTag().toString().equals(TRAILER)){
+        if (v.getTag().toString().equals(TRAILER)) {
             final Activity activity = this;
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final String key = movieDao.loadVideo(movieID).get(clickedPosition).getKey();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent intent = YouTubeStandalonePlayer.createVideoIntent(activity , getString(R.string.google_youtube_api_key), key);
-                            startActivity(intent);
-                        }
-                    });
-                }
+            Executors.newSingleThreadExecutor().execute(() -> {
+                // Load video key from the database
+                final String key = movieDao.loadVideo(movieID).get(clickedPosition).getKey();
+                runOnUiThread(() -> {
+                    // Play the video using YouTubeStandalonePlayer
+                    Intent intent = YouTubeStandalonePlayer.createVideoIntent(activity,
+                            getString(R.string.google_youtube_api_key), key);
+                    startActivity(intent);
+                });
             });
         }
     }
 
-    public void setLiveData(){
+    // Set up observers for LiveData models
+    public void setLiveData() {
         final Observer<List<VideoDetails>> videoObserver = videoReviewDetails -> {
-            //List<VideoDetails> trailerList = videoReviewDetails;
-            Log.i("TAG SETVideoLIVEDATA", String.valueOf(videoReviewDetails));
             videoRecycler.setVideoDetails(videoReviewDetails);
             videoRecycler.notifyDataSetChanged();
         };
         final Observer<List<ReviewDetails>> reviewObserver = reviewDetails -> {
-           // List<ReviewDetails> reviewList = reviewDetails;
-            if(!reviewDetails.isEmpty()) {
+            if (!reviewDetails.isEmpty()) {
                 Log.i("TAG SETReviewLIVEDATA", reviewDetails.get(0).getAuthor());
             }
             reviewRecycler.setReviewDetails(reviewDetails);
@@ -226,6 +218,5 @@ public class DetailsActivity extends AppCompatActivity implements
 
         mLiveDataVideoModel.getVideos().observe(this, videoObserver);
         mLiveDataReviewModel.getReviews().observe(this, reviewObserver);
-
     }
 }

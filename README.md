@@ -4,11 +4,7 @@ This is an Android Application that allows users to browse through The Movie Dat
 
 ## Demo
 
-Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the demo.
-
-## Installation
-
-You can download the application from the Google Play Store by clicking [here](https://play.google.com/store/apps/details?id=gemenielabs.movies).
+Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the Youtube demo. You can download the application from the Google Play Store by clicking [here](https://play.google.com/store/apps/details?id=gemenielabs.movies).
 
 ## Features
 

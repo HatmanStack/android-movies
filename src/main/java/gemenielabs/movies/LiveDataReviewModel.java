@@ -15,11 +15,16 @@ public class LiveDataReviewModel extends ViewModel {
 
     private MutableLiveData<List<ReviewDetails>> mReviews;
 
-    public MutableLiveData<List<ReviewDetails>> getReviews(){
-        if(mReviews == null){
+    /**
+     * Get the LiveData object for reviews.
+     * If it doesn't exist, create a new MutableLiveData instance.
+     *
+     * @return The LiveData object for reviews.
+     */
+    public MutableLiveData<List<ReviewDetails>> getReviews() {
+        if (mReviews == null) {
             mReviews = new MutableLiveData<>();
         }
-        Log.i("TAG MUTABLELIVEDATA", "getReviews");
         return mReviews;
     }
 }

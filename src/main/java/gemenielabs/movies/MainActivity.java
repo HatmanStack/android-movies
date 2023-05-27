@@ -30,9 +30,7 @@ import gemenielabs.movies.Database.MovieDatabase;
 import gemenielabs.movies.Database.MovieDetails;
 
 
-public class MainActivity extends AppCompatActivity implements
-        SharedPreferences.OnSharedPreferenceChangeListener,
-        PosterRecycler.vHClickListener{
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, PosterRecycler.vHClickListener {
 
     public static final String RESULTS = "results";
     public static final String MOVIE_ID = "json_string";
@@ -41,99 +39,90 @@ public class MainActivity extends AppCompatActivity implements
     public static final String SAVED_STRING = "saved_string";
     public static final String IMAGE_SIZE = "w185";
     public static final String IS_FAVORITE = "is_favorite";
+
     private LiveDataMovieModel mLiveDataMovieModel;
-    public static MovieDao movieDao;
-    SharedPreferences s;
+    private SharedPreferences sharedPreferences;
     private PosterRecycler posterRecycler;
 
-    @BindView(R.id.poster_list) RecyclerView posterList;
+    @BindView(R.id.poster_list)
+    RecyclerView posterList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
         ButterKnife.bind(this);
 
-        s = PreferenceManager.getDefaultSharedPreferences(this);
-        s.registerOnSharedPreferenceChangeListener(this);
+        // Get the default SharedPreferences instance
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        // Initialize the MovieDatabase
         MovieDatabase db = Room.databaseBuilder(getApplicationContext(), MovieDatabase.class, "moviedatabase").build();
         movieDao = db.movieDao();
-        mLiveDataMovieModel =  new ViewModelProvider.AndroidViewModelFactory(getApplication()).create(LiveDataMovieModel.class);
+
+        // Create and observe the LiveDataMovieModel
+        mLiveDataMovieModel = new ViewModelProvider.AndroidViewModelFactory(getApplication()).create(LiveDataMovieModel.class);
         mLiveDataMovieModel.getMovies().observe(this, posterObserver);
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-                GetWebData getWebData = new GetWebData();
-                getWebData.getMovieDetails(getString(R.string.moviedb_api_key));
-                setPosterList();
-            }
+
+        // Retrieve movie details from the web and set the poster list
+        Executors.newSingleThreadExecutor().execute(() -> {
+            GetWebData getWebData = new GetWebData();
+            getWebData.getMovieDetails(getString(R.string.moviedb_api_key));
+            setPosterList();
         });
 
-        setPosterList();
         createRecycler();
         getWindow().setExitTransition(new Explode());
-
     }
 
+    // Create the poster RecyclerView
     public void createRecycler() {
-
         StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         posterList.setLayoutManager(staggeredGridLayoutManager);
         posterRecycler = new PosterRecycler(this);
         posterList.setAdapter(posterRecycler);
-        posterList.scrollToPosition(s.getInt(POSITION, 0));
-
+        posterList.scrollToPosition(sharedPreferences.getInt(POSITION, 0));
     }
 
-    Observer<List<MovieDetails>> posterObserver = new Observer<List<MovieDetails>>() {
-        @Override
-        public void onChanged(@Nullable List<MovieDetails> movieDetails) {
-
-            posterRecycler.setList(movieDetails);
-        }
+    // Observer for the poster LiveData
+    Observer<List<MovieDetails>> posterObserver = movieDetails -> {
+        posterRecycler.setList(movieDetails);
     };
 
-    public void setPosterList(){
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
+    // Set the poster list based on shared preferences
+    public void setPosterList() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            List<MovieDetails> list = new ArrayList<>();
 
-            List<MovieDetails> list = movieDao.getAll();
-            list.clear();
-            if (s.getBoolean(getString(R.string.popular_key), true)) {
-
+            if (sharedPreferences.getBoolean(getString(R.string.popular_key), true)) {
                 list.addAll(movieDao.loadPopular());
             }
-            if (s.getBoolean(getString(R.string.top_rated_key), true)) {
-
+            if (sharedPreferences.getBoolean(getString(R.string.top_rated_key), true)) {
                 list.addAll(movieDao.loadTopRated());
             }
-            if (s.getBoolean(getString(R.string.favorites_key), true) && movieDao.loadFavorites().size() > 0) {
+            if (sharedPreferences.getBoolean(getString(R.string.favorites_key), true) && movieDao.loadFavorites().size() > 0) {
                 Log.i("TAG FAVORITES", movieDao.loadFavorites().size() + " ");
                 list.addAll(movieDao.loadFavorites());
             }
-                for(MovieDetails movie: list){
-                    Log.i("TAG", "list: " + movie.getTitle());
-                }
-            final List<MovieDetails> setPosterList = list;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    for(MovieDetails movie: setPosterList){
-                        Log.i("TAG", "setPosterList: " + movie.getTitle());
-                    }
-                    mLiveDataMovieModel.getMovies().setValue(setPosterList);
-                }
-            });
 
+            // Log the movies in the list
+            for (MovieDetails movie : list) {
+                Log.i("TAG", "list: " + movie.getTitle());
             }
+
+            runOnUiThread(() -> {
+                // Log the movies in the setPosterList
+                for (MovieDetails movie : list) {
+                    Log.i("TAG", "setPosterList: " + movie.getTitle());
+                }
+                mLiveDataMovieModel.getMovies().setValue(list);
+            });
         });
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences s, String key) {
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         setPosterList();
     }
 
@@ -164,3 +153,4 @@ public class MainActivity extends AppCompatActivity implements
         startActivity(intent, options.toBundle());
     }
 }
+

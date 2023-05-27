@@ -12,11 +12,17 @@ public class LiveDataMovieModel extends ViewModel {
 
     private MutableLiveData<List<MovieDetails>> mMovies;
 
+    /**
+     * Get the LiveData object for movies.
+     * If it doesn't exist, create a new MutableLiveData instance.
+     *
+     * @return The LiveData object for movies.
+     */
     public MutableLiveData<List<MovieDetails>> getMovies() {
-        if(mMovies == null){
+        if (mMovies == null) {
             mMovies = new MutableLiveData<>();
         }
         return mMovies;
     }
-
 }
+
