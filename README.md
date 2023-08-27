@@ -21,8 +21,8 @@ Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the Youtube 
 <li>Java</li>
 <li>Android SDK</li>
 <li>Picasso</li>
-<li>The Movie Database API for Movie Data Create string "moviedb_api_key" in res/values and insert your own TMDB key</li>
-<li>YouTube API for Video Data Create string "google_youtube_api_key" in res/values and insert your own Google API key</li>
+<li>The Movie Database API Create string "moviedb_api_key" in res/values insert TMDB key</li>
+<li>YouTube API Create string "google_youtube_api_key" in res/values insert Google API key</li>
 </ul>
 
 ## Screenshots
