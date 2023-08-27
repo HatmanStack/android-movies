@@ -20,9 +20,9 @@ Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the Youtube 
 <ul>
 <li>Java</li>
 <li>Android SDK</li>
-<li>The Movie Database API</li>
 <li>Picasso</li>
-<li>YouTube Android Player Api</li>
+<li>The Movie Database API for Movie Data Create string "moviedb_api_key" in res/values and insert your own TMDB key</li>
+<li>YouTube API for Video Data Create string "google_youtube_api_key" in res/values and insert your own Google API key</li>
 </ul>
 
 ## Screenshots
@@ -35,6 +35,13 @@ Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the Youtube 
     <td><img src="https://github.com/HatmanStack/android-movies/blob/main/pics/movies3.png" alt="Image 3"></td>
   </tr>
 </table>
+
+## Building
+
+- Open Android Studio. From the Welcome screen, select Open an existing Android Studio project.
+- From the Open File or Project window that appears, navigate to and select the android-movies directory. Click OK.
+- If it asks you to do a Gradle Sync, click OK.
+- With your Android device/emulator connected to your computer and developer mode enabled, click on the green Run arrow in Android Studio.
 
 ## License
 

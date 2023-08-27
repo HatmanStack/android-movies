@@ -1,6 +1,5 @@
 package gemenielabs.movies.Adapter;
 
-import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,8 +10,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import gemenielabs.movies.Database.ReviewDetails;
 import gemenielabs.movies.R;
 
@@ -50,11 +47,11 @@ public class ReviewRecycler extends RecyclerView.Adapter<ReviewRecycler.ReviewVH
 
     class ReviewVH extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.review_text) TextView review;
+        public TextView review;
 
         public ReviewVH(View itemView) {
             super(itemView);
-            ButterKnife.bind(this, itemView);
+            review = itemView.findViewById(R.id.review_text);
 
         }
     }

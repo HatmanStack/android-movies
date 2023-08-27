@@ -13,8 +13,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import gemenielabs.movies.Database.MovieDetails;
 import gemenielabs.movies.MainActivity;
 import gemenielabs.movies.R;
@@ -62,11 +60,12 @@ public class PosterRecycler extends RecyclerView.Adapter<PosterRecycler.PosterVH
 
     class PosterVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        @BindView(R.id.poster_view) ImageView posterImage;
+        public ImageView posterImage;
 
         public PosterVH(View itemView) {
             super(itemView);
-            ButterKnife.bind(this, itemView);
+
+            posterImage = itemView.findViewById(R.id.poster_view);
             itemView.setOnClickListener(this);
         }
 

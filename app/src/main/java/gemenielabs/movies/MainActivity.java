@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.lifecycle.Observer;
@@ -22,8 +21,6 @@ import androidx.room.Room;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import gemenielabs.movies.Adapter.PosterRecycler;
 import gemenielabs.movies.Database.MovieDao;
 import gemenielabs.movies.Database.MovieDatabase;
@@ -39,19 +36,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     public static final String SAVED_STRING = "saved_string";
     public static final String IMAGE_SIZE = "w185";
     public static final String IS_FAVORITE = "is_favorite";
+    public static MovieDao movieDao;
 
     private LiveDataMovieModel mLiveDataMovieModel;
     private SharedPreferences sharedPreferences;
     private PosterRecycler posterRecycler;
 
-    @BindView(R.id.poster_list)
-    RecyclerView posterList;
+    public RecyclerView posterList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        posterList = findViewById(R.id.poster_list);
 
         // Get the default SharedPreferences instance
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -93,7 +90,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     // Set the poster list based on shared preferences
     public void setPosterList() {
         Executors.newSingleThreadExecutor().execute(() -> {
-            List<MovieDetails> list = new ArrayList<>();
+            List<MovieDetails> list = movieDao.getAll();
+            list.clear();
 
             if (sharedPreferences.getBoolean(getString(R.string.popular_key), true)) {
                 list.addAll(movieDao.loadPopular());
@@ -105,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 Log.i("TAG FAVORITES", movieDao.loadFavorites().size() + " ");
                 list.addAll(movieDao.loadFavorites());
             }
-
+            Log.i("LIST", "" + list.size());
             // Log the movies in the list
             for (MovieDetails movie : list) {
                 Log.i("TAG", "list: " + movie.getTitle());

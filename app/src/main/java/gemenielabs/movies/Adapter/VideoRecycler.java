@@ -13,8 +13,6 @@ import android.widget.ImageView;
 import com.squareup.picasso.Picasso;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import gemenielabs.movies.Database.VideoDetails;
 import gemenielabs.movies.DetailsActivity;
 import gemenielabs.movies.R;
@@ -66,11 +64,11 @@ public class VideoRecycler extends RecyclerView.Adapter<VideoRecycler.TrailerRev
 
     class TrailerReviewVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        @BindView(R.id.trailer_image) ImageView image;
+        public ImageView image;
 
         public TrailerReviewVH(View itemView) {
             super(itemView);
-            ButterKnife.bind(this, itemView);
+            image = itemView.findViewById(R.id.trailer_image);
             image.setOnClickListener(this);
         }
 

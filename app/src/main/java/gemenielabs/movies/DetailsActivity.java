@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,15 +19,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.youtube.player.YouTubeStandalonePlayer;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.concurrent.Executors;
 
-import butterknife.BindView;
-import butterknife.BindViews;
-import butterknife.ButterKnife;
 import gemenielabs.movies.Adapter.ReviewRecycler;
 import gemenielabs.movies.Adapter.VideoRecycler;
 import gemenielabs.movies.Database.MovieDetails;
@@ -38,15 +35,15 @@ public class DetailsActivity extends AppCompatActivity implements
         VideoRecycler.onListClickListener{
 
     public static final String TRAILER = "trailer";
-    @BindView(R.id.plot_text) TextView plotTX;
-    @BindView(R.id.rating_text) TextView ratingTX;
-    @BindView(R.id.date_text) TextView dateTX;
-    @BindView(R.id.poster_image) ImageView imageView;
-    @BindView(R.id.trailer_list) RecyclerView trailerList;
-    @BindView(R.id.review_list) RecyclerView reviewList;
-    @BindView(R.id.movie_title) TextView movieTitle;
+    public TextView plotTX;
+    public TextView ratingTX;
+    public TextView dateTX;
+    public ImageView imageView;
+    public RecyclerView trailerList;
+    public RecyclerView reviewList;
+    public TextView movieTitle;
     private ImageView favoriteButton;
-    @BindViews({R.id.plot_text, R.id.rating_text, R.id.date_text})List<TextView> textViews;
+
 
 
     private MovieDetails movieDetails;
@@ -55,6 +52,7 @@ public class DetailsActivity extends AppCompatActivity implements
 
     private LiveDataVideoModel mLiveDataVideoModel;
     private LiveDataReviewModel mLiveDataReviewModel;
+    public WebView webView;
     private int movieID;
 
     @Override
@@ -62,8 +60,15 @@ public class DetailsActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         favoriteButton = findViewById(R.id.favorite_button);
-        ButterKnife.bind(this);
-
+        plotTX = findViewById(R.id.plot_text);
+        ratingTX = findViewById(R.id.rating_text);
+        dateTX = findViewById(R.id.date_text);
+        imageView = findViewById(R.id.poster_image);
+        trailerList = findViewById(R.id.trailer_list);
+        reviewList = findViewById(R.id.review_list);
+        movieTitle = findViewById(R.id.movie_title);
+        webView = findViewById(R.id.webview);
+        webView.setVisibility(View.INVISIBLE);
         // Get movie ID and set favorite button icon
         movieID = getIntent().getIntExtra(MainActivity.MOVIE_ID, 0);
         if(getIntent().getBooleanExtra(MainActivity.IS_FAVORITE, false)){
@@ -193,10 +198,13 @@ public class DetailsActivity extends AppCompatActivity implements
                 // Load video key from the database
                 final String key = movieDao.loadVideo(movieID).get(clickedPosition).getKey();
                 runOnUiThread(() -> {
-                    // Play the video using YouTubeStandalonePlayer
-                    Intent intent = YouTubeStandalonePlayer.createVideoIntent(activity,
-                            getString(R.string.google_youtube_api_key), key);
-                    startActivity(intent);
+                    webView.setVisibility(View.VISIBLE);
+                    String url = "https://www.youtube.com/embed/" + key + "?API_key=" + getString(R.string.google_youtube_api_key);
+                    webView.loadUrl(url);
+                    //Intent intent = new Intent(this, VideoActivity.class);
+                    //intent.putExtra("KEY", key);
+                    // Start the VideoActivity
+                    //startActivity(intent);
                 });
             });
         }
