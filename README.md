@@ -1,10 +1,10 @@
 # Movies
 
-This is an Android Application that allows users to browse through The Movie Database using Live Data. It also includes animations, the ability to create a favorites list, and trailers of the movies.
+Movies uses The Movie DataBase to showcase LiveData and Room persistence libraries in Android. It creates a database on device with web data that can be manipulated and changed in real-time.
 
 ## Demo
 
-Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the Youtube demo. You can download the application from the Google Play Store by clicking [here](https://play.google.com/store/apps/details?id=gemenielabs.movies).
+[Youtube demo](https://www.youtube.com/watch?v=qZCzzIzZq6Q) Download the application from the [Google Play Store](https://play.google.com/store/apps/details?id=gemenielabs.movies).
 
 ## Features
 
@@ -21,8 +21,8 @@ Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the Youtube 
 <li>Java</li>
 <li>Android SDK</li>
 <li>Picasso</li>
-<li>The Movie Database API Create string "moviedb_api_key" in res/values insert TMDB key</li>
-<li>YouTube API Create string "google_youtube_api_key" in res/values insert Google API key</li>
+<li>The Movie Database API</li>
+<li>YouTube API</li>
 </ul>
 
 ## Screenshots
@@ -41,6 +41,8 @@ Click [here](https://www.youtube.com/watch?v=qZCzzIzZq6Q) to access the Youtube 
 - Open Android Studio. From the Welcome screen, select Open an existing Android Studio project.
 - From the Open File or Project window that appears, navigate to and select the android-movies directory. Click OK.
 - If it asks you to do a Gradle Sync, click OK.
+- <b>Create string "moviedb_api_key" in res/values folder insert The Movie Database API key</b>
+- <b>Create string "google_youtube_api_key" in res/values folder insert Google API key</b>
 - With your Android device/emulator connected to your computer and developer mode enabled, click on the green Run arrow in Android Studio.
 
 ## License

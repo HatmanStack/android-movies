@@ -3,7 +3,6 @@ package gemenielabs.movies;
 import static gemenielabs.movies.MainActivity.movieDao;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -201,6 +200,7 @@ public class DetailsActivity extends AppCompatActivity implements
                     webView.setVisibility(View.VISIBLE);
                     String url = "https://www.youtube.com/embed/" + key + "?API_key=" + getString(R.string.google_youtube_api_key);
                     webView.loadUrl(url);
+                    // **** YOUTUBE STANDALONE PLAYER DEPRECATED ****
                     //Intent intent = new Intent(this, VideoActivity.class);
                     //intent.putExtra("KEY", key);
                     // Start the VideoActivity
