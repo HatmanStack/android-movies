@@ -4,7 +4,7 @@
  */
 
 import { getDatabase } from './init';
-import { MovieDetails } from '../models/types';
+import { MovieDetails, VideoDetails, ReviewDetails } from '../models/types';
 
 /**
  * Helper function to map database row to MovieDetails object
@@ -188,6 +188,173 @@ export async function deleteMovie(movieId: number): Promise<void> {
     console.error('Failed to delete movie:', error);
     throw new Error(
       `Failed to delete movie: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+// ============================================================================
+// VIDEO DETAILS QUERIES
+// ============================================================================
+
+/**
+ * Helper function to map database row to VideoDetails object
+ */
+function mapRowToVideo(row: any): VideoDetails {
+  return {
+    identity: row.identity,
+    id: row.id,
+    image_url: row.image_url,
+    iso_639_1: row.iso_639_1,
+    iso_3166_1: row.iso_3166_1,
+    key: row.key,
+    site: row.site,
+    size: row.size,
+    type: row.type,
+  };
+}
+
+/**
+ * Insert or update a video
+ * Migrates: @Insert(onConflict = OnConflictStrategy.REPLACE) void insertVideoDetails(VideoDetails videoDetails)
+ *
+ * @param video - Video to insert/update (identity is auto-generated if not provided)
+ */
+export async function insertVideo(
+  video: Omit<VideoDetails, 'identity'> | VideoDetails
+): Promise<void> {
+  const db = getDatabase();
+
+  try {
+    await db.runAsync(
+      `INSERT OR REPLACE INTO video_details
+       (id, image_url, iso_639_1, iso_3166_1, key, site, size, type)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        video.id,
+        video.image_url,
+        video.iso_639_1,
+        video.iso_3166_1,
+        video.key,
+        video.site,
+        video.size,
+        video.type,
+      ]
+    );
+  } catch (error) {
+    console.error('Failed to insert video:', error);
+    throw new Error(
+      `Failed to insert video: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
+ * Get all videos for a specific movie
+ * Migrates: @Query("SELECT * FROM video_details WHERE id = :id") List<VideoDetails> getVideosDetails(int id)
+ *
+ * @param movieId - Movie ID to get videos for
+ * @returns Array of videos for the movie
+ */
+export async function getVideosForMovie(movieId: number): Promise<VideoDetails[]> {
+  const db = getDatabase();
+
+  try {
+    const rows = await db.getAllAsync<any>('SELECT * FROM video_details WHERE id = ?', [movieId]);
+
+    return rows.map(mapRowToVideo);
+  } catch (error) {
+    console.error('Failed to get videos for movie:', error);
+    throw new Error(
+      `Failed to get videos for movie: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
+ * Get trailers for a specific movie
+ * Migrates: @Query("SELECT * FROM video_details WHERE type = 'Trailer' AND id = :id") List<VideoDetails> loadVideo(int id)
+ *
+ * @param movieId - Movie ID to get trailers for
+ * @returns Array of trailers for the movie
+ */
+export async function getTrailersForMovie(movieId: number): Promise<VideoDetails[]> {
+  const db = getDatabase();
+
+  try {
+    const rows = await db.getAllAsync<any>(
+      "SELECT * FROM video_details WHERE type = 'Trailer' AND id = ?",
+      [movieId]
+    );
+
+    return rows.map(mapRowToVideo);
+  } catch (error) {
+    console.error('Failed to get trailers for movie:', error);
+    throw new Error(
+      `Failed to get trailers for movie: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+// ============================================================================
+// REVIEW DETAILS QUERIES
+// ============================================================================
+
+/**
+ * Helper function to map database row to ReviewDetails object
+ */
+function mapRowToReview(row: any): ReviewDetails {
+  return {
+    identity: row.identity,
+    id: row.id,
+    author: row.author,
+    content: row.content,
+  };
+}
+
+/**
+ * Insert or update a review
+ * Migrates: @Insert(onConflict = OnConflictStrategy.REPLACE) void insertReviewDetails(ReviewDetails reviewDetails)
+ *
+ * @param review - Review to insert/update (identity is auto-generated if not provided)
+ */
+export async function insertReview(
+  review: Omit<ReviewDetails, 'identity'> | ReviewDetails
+): Promise<void> {
+  const db = getDatabase();
+
+  try {
+    await db.runAsync(
+      `INSERT OR REPLACE INTO review_details
+       (id, author, content)
+       VALUES (?, ?, ?)`,
+      [review.id, review.author, review.content]
+    );
+  } catch (error) {
+    console.error('Failed to insert review:', error);
+    throw new Error(
+      `Failed to insert review: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
+ * Get all reviews for a specific movie
+ * Migrates: @Query("SELECT * FROM review_details WHERE id = :id") List<ReviewDetails> getReviewDetails(int id)
+ *
+ * @param movieId - Movie ID to get reviews for
+ * @returns Array of reviews for the movie
+ */
+export async function getReviewsForMovie(movieId: number): Promise<ReviewDetails[]> {
+  const db = getDatabase();
+
+  try {
+    const rows = await db.getAllAsync<any>('SELECT * FROM review_details WHERE id = ?', [movieId]);
+
+    return rows.map(mapRowToReview);
+  } catch (error) {
+    console.error('Failed to get reviews for movie:', error);
+    throw new Error(
+      `Failed to get reviews for movie: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
