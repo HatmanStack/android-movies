@@ -371,6 +371,7 @@ describe('Database Query Functions', () => {
       await insertMovie(mockMovie);
 
       // Attempt SQL injection
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const maliciousId = "1 OR 1=1; DROP TABLE movie_details--" as any;
 
       // Should not throw error and should use prepared statement
@@ -380,6 +381,7 @@ describe('Database Query Functions', () => {
     it('should prevent SQL injection in getVideosForMovie', async () => {
       await insertVideo(mockVideo);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const maliciousId = "1 OR 1=1; DROP TABLE video_details--" as any;
 
       await expect(getVideosForMovie(maliciousId)).resolves.not.toThrow();

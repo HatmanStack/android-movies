@@ -1,3 +1,4 @@
+/* eslint-env jest, node */
 // Jest setup file for React Native Testing Library
 // extend-expect is now built into @testing-library/react-native v12.4+
 

@@ -1,7 +1,13 @@
 /**
  * Database query functions
  * Migrated from MovieDao.java Room interface
+ *
+ * Note: Database row types use `any` because SQLite query results are dynamically typed.
+ * Each row is immediately mapped to a strongly-typed interface for type safety.
+ * ESLint rule @typescript-eslint/no-explicit-any is disabled for database operations.
  */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { getDatabase } from './init';
 import { MovieDetails, VideoDetails, ReviewDetails } from '../models/types';
@@ -10,6 +16,7 @@ import { MovieDetails, VideoDetails, ReviewDetails } from '../models/types';
  * Helper function to map database row to MovieDetails object
  * Handles INTEGER to boolean conversion for favorite, toprated, popular
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapRowToMovie(row: any): MovieDetails {
   return {
     id: row.id,
@@ -199,6 +206,7 @@ export async function deleteMovie(movieId: number): Promise<void> {
 /**
  * Helper function to map database row to VideoDetails object
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapRowToVideo(row: any): VideoDetails {
   return {
     identity: row.identity,
@@ -302,6 +310,7 @@ export async function getTrailersForMovie(movieId: number): Promise<VideoDetails
 /**
  * Helper function to map database row to ReviewDetails object
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapRowToReview(row: any): ReviewDetails {
   return {
     identity: row.identity,
