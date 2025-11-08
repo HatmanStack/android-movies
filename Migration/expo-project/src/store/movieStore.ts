@@ -156,8 +156,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
     } catch (error) {
       // Rollback on error
       set({ movies });
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to toggle favorite';
+      const errorMessage = `Failed to toggle favorite: ${error instanceof Error ? error.message : 'Unknown error'}`;
       set({ error: errorMessage });
     }
   },
@@ -176,8 +175,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
 
       set({ movies: updatedMovies });
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to refresh movie';
+      const errorMessage = `Failed to refresh movie: ${error instanceof Error ? error.message : 'Unknown error'}`;
       set({ error: errorMessage });
     }
   },
