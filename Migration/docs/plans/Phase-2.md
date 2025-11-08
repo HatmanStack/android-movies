@@ -828,3 +828,153 @@ Proceed to **[Phase 3: Navigation & Core UI Components](./Phase-3.md)** to build
 ---
 
 **Estimated Total Tokens for Phase 2:** ~30,000
+
+---
+
+## Review Feedback (Iteration 1)
+
+**Review Date:** 2025-11-08
+**Reviewer:** Senior Code Reviewer
+**Status:** ⚠️ CHANGES REQUIRED
+
+### ❌ Critical Issue: Tests Not Passing
+
+> **Evidence:** Running `npm test` produces:
+> ```
+> FAIL __tests__/database/queries.test.ts
+> ● Test suite failed to run
+> ReferenceError: You are trying to `import` a file outside of the scope of the test code.
+> ```
+>
+> **Consider:** The Phase 2 success criteria (line 11) requires "Comprehensive tests for database queries and stores" and the verification section (line 778) requires "All tests pass: `npm test`". Are the tests actually passing?
+>
+> **Think about:** This error comes from `node_modules/expo/src/winter/runtime.native.ts:20:43`. What is Expo Winter trying to do? Why is it complaining about importing files outside the test scope?
+>
+> **Investigate:** Look at the jest.config.js transformIgnorePatterns. Does it need to include expo-sqlite in the transform patterns? Are there similar issues reported for jest-expo + expo-sqlite + Expo SDK 54?
+>
+> **Reflect:** The plan requires tests to pass before approval. Can you approve Phase 2 when `npm test` fails for all test files?
+
+### ❌ Critical Issue: Filter Store Behavior Doesn't Match Android App
+
+> **Evidence:** In `MainActivity.java:96-105`, the Android app checks multiple filters independently:
+> ```java
+> if (sharedPreferences.getBoolean(getString(R.string.popular_key), true)) {
+>     list.addAll(movieDao.loadPopular());
+> }
+> if (sharedPreferences.getBoolean(getString(R.string.top_rated_key), true)) {
+>     list.addAll(movieDao.loadTopRated());
+> }
+> if (sharedPreferences.getBoolean(getString(R.string.favorites_key), true)) {
+>     list.addAll(movieDao.loadFavorites());
+> }
+> ```
+>
+> **Consider:** What does `list.addAll()` for each filter suggest about whether filters can be active simultaneously in the Android app?
+>
+> **Think about:** In your `filterStore.ts:82-90`, the `getActiveFilter()` function returns a single MovieFilter. How does this align with the Android app's ability to show multiple categories at once?
+>
+> **Reflect:** Look at `filterStore.ts:40-48`. When you toggle popular ON (current=false→true), what happens to showTopRated and showFavorites? Is this the behavior the Android app has?
+>
+> **Consider:** The Phase 2 plan (line 529) states filters should "Replace SharedPreferences". Does your implementation replicate the Android behavior, or have you changed the functionality?
+
+### ⚠️ Major Issue: Filter Toggle Logic Is Inverted
+
+> **Evidence:** In `filterStore.ts:41-47`:
+> ```typescript
+> togglePopular: () => {
+>     const current = get().showPopular;
+>     set({
+>       showPopular: !current,
+>       showTopRated: current, // If turning on popular, turn off others
+>       showFavorites: current,
+>     });
+>   },
+> ```
+>
+> **Think about:** When `current = true` (popular is ON), you toggle to `!true = false` (popular OFF). Then you set `showTopRated = true` and `showFavorites = true`. Is this "turning off others"?
+>
+> **Consider:** When `current = false` (popular is OFF), you toggle to `!false = true` (popular ON). Then you set `showTopRated = false` and `showFavorites = false`. Does this match the comment "If turning on popular, turn off others"?
+>
+> **Reflect:** The logic appears backwards from the comment. If you intend mutual exclusivity, should the logic be `showTopRated: !current` instead of `showTopRated: current`?
+>
+> **But also consider:** Does the Android app even have mutual exclusivity, or can multiple filters be active? (See previous section)
+
+### ⚠️ Major Issue: ESLint Configuration Not Working
+
+> **Evidence:** Running `npm run lint` produces:
+> ```
+> ESLint: 9.39.1
+> ESLint couldn't find an eslint.config.(js|mjs|cjs) file.
+> ```
+>
+> **Consider:** The codebase has `.eslintrc.js` but ESLint v9 expects `eslint.config.js`. Is your linter actually running?
+>
+> **Think about:** The Phase 2 verification checklist (line 791) requires "ESLint shows no errors". Can you verify this if the linter doesn't run?
+>
+> **Reflect:** Should you downgrade to ESLint v8, or migrate to the new flat config format? What does the Expo ecosystem recommend?
+
+### ✅ Strengths Observed
+
+The following aspects were verified and are well-implemented:
+
+1. **Database Schema (Task 1):**
+   - ✓ All three tables created correctly (verified via Read tool on schema.ts:16-70)
+   - ✓ Column types correctly mapped (Java boolean → SQLite INTEGER)
+   - ✓ Singleton pattern implemented properly (verified init.ts:63-75)
+   - ✓ Version tracking added (schema.ts:76-80)
+
+2. **Query Functions (Tasks 2 & 3):**
+   - ✓ All DAO methods migrated (verified 12 exported functions in queries.ts)
+   - ✓ Prepared statements used throughout (no SQL injection vulnerabilities)
+   - ✓ Boolean mapping helper function (queries.ts:20-35)
+   - ✓ Error handling comprehensive (try-catch blocks in all functions)
+
+3. **Movie Store (Task 4):**
+   - ✓ TypeScript interfaces well-defined (movieStore.ts:26-42)
+   - ✓ Loading states managed properly
+   - ✓ Optimistic updates implemented (movieStore.ts:141-146)
+   - ✓ Rollback on error (movieStore.ts:156-161)
+
+4. **Test Coverage (Tasks 6 & 7):**
+   - ✓ 138 test cases for database queries
+   - ✓ 63 test cases for movie store
+   - ✓ 46 test cases for filter store
+   - ✓ Total 247 test cases written (comprehensive)
+   - ✓ Mock database properly implemented (jest.setup.js:11-136)
+
+5. **Commit Quality:**
+   - ✓ All commits follow conventional format (verified via git log)
+   - ✓ Commit messages descriptive and accurate
+   - ✓ Atomic commits (one feature per commit)
+
+6. **TypeScript Compilation:**
+   - ✓ `npx tsc --noEmit` passes without errors (verified via Bash tool)
+   - ✓ Strict type checking enforced
+   - ✓ No `any` types except in database row mapping (appropriately documented)
+
+### Required Actions Before Approval
+
+1. **Fix Jest Configuration**
+   - Research Expo Winter compatibility with jest-expo
+   - Update jest.config.js or jest.setup.js to resolve import errors
+   - Verify all tests pass: `npm test`
+
+2. **Fix Filter Store Behavior**
+   - Decide: Should filters be mutually exclusive or allow multiple active?
+   - Review Android MainActivity.java:91-120 to understand expected behavior
+   - Update filterStore.ts toggle logic to match Android behavior
+   - Update movieStore.ts to handle multiple active filters if needed
+
+3. **Fix ESLint**
+   - Migrate to eslint.config.js OR downgrade to ESLint v8
+   - Verify: `npm run lint` executes without errors
+
+### Questions for Clarification
+
+> **QUESTION:** Looking at the Android app's `setPosterList()` method, it combines results from multiple filter queries (`list.addAll()`). Should the React Native version support showing popular + top-rated + favorites simultaneously, or was changing to mutually-exclusive filters an intentional design decision?
+
+---
+
+**Next Steps:** Address the critical issues above, then re-run review verification.
+
+
