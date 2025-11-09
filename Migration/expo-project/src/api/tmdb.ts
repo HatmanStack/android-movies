@@ -87,6 +87,16 @@ export class TMDbService {
   }
 
   /**
+   * Get detailed information for a specific movie
+   * Endpoint: /movie/{movieId}
+   * @param movieId - TMDb movie ID
+   * @returns Promise<TMDbMovie>
+   */
+  static async getMovieDetails(movieId: number): Promise<TMDbMovie> {
+    return this.get<TMDbMovie>(`/movie/${movieId}`);
+  }
+
+  /**
    * Get videos/trailers for a specific movie
    * Endpoint: /movie/{movieId}/videos
    * @param movieId - TMDb movie ID

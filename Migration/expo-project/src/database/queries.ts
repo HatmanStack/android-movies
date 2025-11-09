@@ -190,10 +190,22 @@ export async function deleteMovie(movieId: number): Promise<void> {
   const db = getDatabase();
 
   try {
-    // Delete related records first to prevent orphans
-    await db.runAsync('DELETE FROM video_details WHERE id = ?', [movieId]);
-    await db.runAsync('DELETE FROM review_details WHERE id = ?', [movieId]);
-    await db.runAsync('DELETE FROM movie_details WHERE id = ?', [movieId]);
+    // Begin transaction for atomicity
+    await db.runAsync('BEGIN TRANSACTION');
+
+    try {
+      // Delete related records first to prevent orphans
+      await db.runAsync('DELETE FROM video_details WHERE id = ?', [movieId]);
+      await db.runAsync('DELETE FROM review_details WHERE id = ?', [movieId]);
+      await db.runAsync('DELETE FROM movie_details WHERE id = ?', [movieId]);
+
+      // Commit transaction
+      await db.runAsync('COMMIT');
+    } catch (deleteError) {
+      // Rollback on any error
+      await db.runAsync('ROLLBACK');
+      throw deleteError;
+    }
   } catch (error) {
     console.error('Failed to delete movie:', error);
     throw new Error(

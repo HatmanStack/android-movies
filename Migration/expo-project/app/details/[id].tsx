@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MovieDetails, VideoDetails, ReviewDetails } from '../../src/models/types';
-import { getMovieById, getTrailersForMovie, getReviewsForMovie, insertVideo, insertReview } from '../../src/database/queries';
+import { getMovieById, getTrailersForMovie, getReviewsForMovie, insertMovie, insertVideo, insertReview } from '../../src/database/queries';
 import { useMovieStore } from '../../src/store/movieStore';
 import { TMDbService } from '../../src/api/tmdb';
 import { YouTubeService } from '../../src/api/youtube';
