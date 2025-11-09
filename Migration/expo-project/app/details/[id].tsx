@@ -40,10 +40,36 @@ export default function DetailsScreen(): React.JSX.Element {
 
     try {
       // Load movie details from database
-      const movieData = await getMovieById(movieId);
-      if (movieData) {
-        setMovie(movieData);
+      let movieData = await getMovieById(movieId);
+
+      // If movie not in database, fetch from API
+      if (!movieData) {
+        try {
+          const apiMovie = await TMDbService.getMovieDetails(movieId);
+          // Map API response to MovieDetails
+          movieData = {
+            id: apiMovie.id,
+            title: apiMovie.title || '',
+            overview: apiMovie.overview || '',
+            poster_path: apiMovie.poster_path || '',
+            release_date: apiMovie.release_date || '',
+            vote_average: apiMovie.vote_average || 0,
+            vote_count: apiMovie.vote_count || 0,
+            popularity: apiMovie.popularity || 0,
+            original_language: apiMovie.original_language || '',
+            favorite: false,
+            toprated: false,
+            popular: false,
+          };
+          // Save to database for future use
+          await insertMovie(movieData);
+        } catch (apiError) {
+          console.error('Failed to fetch movie from API:', apiError);
+          throw new Error('Movie not found in database or API');
+        }
       }
+
+      setMovie(movieData);
 
       // Load trailers from database
       let trailersData = await getTrailersForMovie(movieId);
@@ -65,7 +91,7 @@ export default function DetailsScreen(): React.JSX.Element {
               iso_3166_1: video.iso_3166_1,
               key: video.key,
               site: video.site,
-              size: video.size.toString(),
+              size: video.size,
               type: video.type,
             };
 

@@ -62,8 +62,10 @@ jest.mock('expo-sqlite', () => {
       } else if (sql.includes('INSERT OR REPLACE INTO video_details')) {
         const table = tables.get('video_details') || [];
         const [id, image_url, iso_639_1, iso_3166_1, key, site, size, type] = params;
-        table.push({
-          identity: table.length + 1,
+        // REPLACE semantics: remove existing entries with same combination
+        const filtered = table.filter((row) => !(row.id === id && row.key === key));
+        filtered.push({
+          identity: filtered.length + 1,
           id,
           image_url,
           iso_639_1,
@@ -73,12 +75,14 @@ jest.mock('expo-sqlite', () => {
           size,
           type,
         });
-        tables.set('video_details', table);
+        tables.set('video_details', filtered);
       } else if (sql.includes('INSERT OR REPLACE INTO review_details')) {
         const table = tables.get('review_details') || [];
         const [id, author, content] = params;
-        table.push({ identity: table.length + 1, id, author, content });
-        tables.set('review_details', table);
+        // REPLACE semantics: remove existing entries with same id+author
+        const filtered = table.filter((row) => !(row.id === id && row.author === author));
+        filtered.push({ identity: filtered.length + 1, id, author, content });
+        tables.set('review_details', filtered);
       } else if (sql.includes('INSERT INTO database_version')) {
         const table = tables.get('database_version') || [];
         table.push({ version: params[0] });
