@@ -53,8 +53,8 @@ export interface VideoDetails {
   key: string;
   /** Video hosting site (e.g., 'YouTube') */
   site: string;
-  /** Video resolution (e.g., '1080', '720') */
-  size: string;
+  /** Video resolution (e.g., 1080, 720) */
+  size: number;
   /** Video type (e.g., 'Trailer', 'Clip') */
   type: string;
 }

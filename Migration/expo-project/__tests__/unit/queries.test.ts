@@ -193,7 +193,7 @@ describe('Database Queries - Error Handling', () => {
         iso_3166_1: 'US',
         key: 'abc123',
         site: 'YouTube',
-        size: '1080',
+        size: 1080,
         type: 'Trailer',
       };
 
@@ -210,7 +210,7 @@ describe('Database Queries - Error Handling', () => {
         iso_3166_1: 'US',
         key: 'abc123',
         site: 'YouTube',
-        size: '1080',
+        size: 1080,
         type: 'Trailer',
       };
 

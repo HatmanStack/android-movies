@@ -20,7 +20,7 @@ export const CREATE_MOVIE_DETAILS_TABLE = `
     overview TEXT,
     poster_path TEXT,
     release_date TEXT,
-    vote_average INTEGER,
+    vote_average REAL,
     vote_count INTEGER,
     popularity REAL,
     original_language TEXT,
@@ -47,7 +47,7 @@ export const CREATE_VIDEO_DETAILS_TABLE = `
     iso_3166_1 TEXT,
     key TEXT,
     site TEXT,
-    size TEXT,
+    size INTEGER,
     type TEXT
   );
 `;
@@ -116,5 +116,9 @@ export const SCHEMA_STATEMENTS = [
 /**
  * Current database version
  * Increment this when schema changes are made
+ *
+ * Version History:
+ * - v1: Initial schema
+ * - v2: Fix vote_average (INTEGER -> REAL), Fix video size (TEXT -> INTEGER)
  */
-export const CURRENT_DB_VERSION = 1;
+export const CURRENT_DB_VERSION = 2;
