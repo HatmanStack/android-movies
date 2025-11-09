@@ -5,6 +5,7 @@
 
 import { useMovieStore } from '../../src/store/movieStore';
 import { useFilterStore } from '../../src/store/filterStore';
+import * as queries from '../../src/database/queries';
 
 // Mock database
 jest.mock('../../src/database/queries', () => ({
@@ -67,7 +68,7 @@ describe('Integration: Favorites Flow', () => {
   });
 
   it('handles favorite toggle error with rollback', async () => {
-    const { insertMovie } = require('../../src/database/queries');
+    const insertMovie = queries.insertMovie as jest.MockedFunction<typeof queries.insertMovie>;
     insertMovie.mockRejectedValueOnce(new Error('Database error'));
 
     const testMovie = {
@@ -128,7 +129,9 @@ describe('Integration: Favorites Flow', () => {
       },
     ];
 
-    const { getFavoriteMovies } = require('../../src/database/queries');
+    const getFavoriteMovies = queries.getFavoriteMovies as jest.MockedFunction<
+      typeof queries.getFavoriteMovies
+    >;
     getFavoriteMovies.mockResolvedValue([movies[0]]);
 
     useMovieStore.setState({ movies });

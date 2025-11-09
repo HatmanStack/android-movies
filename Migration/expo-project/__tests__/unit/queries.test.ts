@@ -21,8 +21,14 @@ import { getDatabase } from '../../src/database/init';
 // Mock the database
 jest.mock('../../src/database/init');
 
+interface MockDatabase {
+  runAsync: jest.MockedFunction<(...args: unknown[]) => Promise<{ changes: number; lastInsertRowId: number }>>;
+  getFirstAsync: jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+  getAllAsync: jest.MockedFunction<(...args: unknown[]) => Promise<unknown[]>>;
+}
+
 describe('Database Queries - Error Handling', () => {
-  let mockDb: any;
+  let mockDb: MockDatabase;
 
   beforeEach(() => {
     jest.clearAllMocks();
