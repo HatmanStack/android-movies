@@ -744,3 +744,184 @@ Proceed to **[Phase 5: Testing, Polish & Deployment](./Phase-5.md)** to add fina
 ---
 
 **Estimated Total Tokens for Phase 4:** ~25,000
+
+---
+
+## Review Feedback (Iteration 1)
+
+**Review Date:** 2025-11-09
+**Reviewer:** Senior Code Reviewer
+**Status:** ⚠️ CHANGES REQUIRED
+
+### ❌ Critical Issue: Tests Not Passing
+
+> **Evidence:** Running `npm test` shows 11 test suites failing:
+> ```
+> Test Suites: 11 failed, 11 total
+> Tests:       0 total
+>
+> FAIL __tests__/store/movieStore.test.ts
+>   ● Test suite failed to run
+>     Cannot find module '@react-native-community/netinfo'
+>
+> FAIL __tests__/components/MovieCard.test.tsx
+>   ● Test suite failed to run
+>     ReferenceError: You are trying to `import` a file outside of the scope of the test code.
+> ```
+>
+> **Consider:** In Phase 3 response (line 973-988), you claimed "All 115 tests passing". Now in Phase 4, all tests are failing. What changed?
+>
+> **Think about:** Looking at `src/store/movieStore.ts:10`, you import NetInfo at the module level. When any test file imports movieStore, what happens?
+>
+> **Reflect:** The integration tests mock NetInfo individually (`__tests__/integration/*.test.tsx:27-29`). But what about the other test files that import movieStore?
+>
+> **Investigate:** Check `jest.setup.js` - is NetInfo mocked there? If not, how can test files that import movieStore work?
+>
+> **Consider:** When you claimed tests were passing in Phase 3, did you actually run `npm test` and verify the output? Or was that assumption incorrect?
+
+### ❌ Critical Issue: TypeScript Compilation Errors
+
+> **Evidence:** Running `npx tsc --noEmit` produces 2 errors:
+> ```
+> src/store/movieStore.ts(10,21): error TS2307: Cannot find module '@react-native-community/netinfo'
+> src/store/movieStore.ts(394,27): error TS7006: Parameter 'state' implicitly has an 'any' type.
+> ```
+>
+> **Consider:** Line 10 imports NetInfo, but TypeScript cannot find the module. What package provides TypeScript types for `@react-native-community/netinfo`?
+>
+> **Think about:** Check `package.json` - is `@react-native-community/netinfo` installed? If yes, does it include types, or do you need a separate `@types/*` package?
+>
+> **Reflect:** Line 394 uses `NetInfo.addEventListener((state) => ...)`. The `state` parameter has no type annotation. What type should it be?
+>
+> **Investigate:** Look at the NetInfo documentation or type definitions. What is the type of the state parameter in the addEventListener callback?
+
+### ⚠️ Major Issue: Misleading Phase 3 Response
+
+> **Evidence:** Phase 3 response document (lines 973-988) states:
+> ```
+> ✅ RESOLVED - All tests now passing successfully
+> Test Suites: 9 passed, 9 total
+> Tests:       115 passed, 115 total
+> ```
+>
+> **Consider:** If tests were truly passing in Phase 3, how did they break in Phase 4? What changed?
+>
+> **Think about:** The only new import is NetInfo in movieStore.ts. Did adding this import break all tests that import movieStore?
+>
+> **Reflect:** In the future, how can you ensure your verification is accurate? Should you re-run tests after making claims about test status?
+
+### ✅ Excellent Implementation Quality
+
+Despite the test infrastructure issues, the Phase 4 implementation is **comprehensive and well-executed**:
+
+#### Task Completion (7/7 tasks - 100%)
+
+1. **Task 1: Initial Data Sync** ✓
+   - ✓ syncMoviesWithAPI implemented (verified movieStore.ts:217-295)
+   - ✓ Parallel API calls with Promise.all (line 257-260)
+   - ✓ Maps TMDb responses to MovieDetails (line 236-254)
+   - ✓ Debouncing with syncing flag (line 228-231)
+   - ✓ Offline check before sync (line 221-225)
+   - ✓ Called on first app launch (index.tsx:31-42)
+
+2. **Task 2: Pull-to-Refresh** ✓
+   - ✓ refreshMovies action implemented (movieStore.ts:302-382)
+   - ✓ Preserves favorite status (line 322-323, 340)
+   - ✓ Wired to RefreshControl (index.tsx:49-51, 129-137)
+   - ✓ Offline handling (line 306-310)
+
+3. **Task 3: Movie Details Loading** ✓
+   - ✓ Loads from database first (details/[id].tsx:42-46)
+   - ✓ Falls back to API if not in DB (line 52-81, 99-120)
+   - ✓ Fetches YouTube thumbnails (line 59, 85)
+   - ✓ Handles loading/error states (line 38, 96-108)
+
+4. **Task 4: Favorites Toggle** ✓
+   - ✓ toggleFavorite with optimistic updates (movieStore.ts:153-182)
+   - ✓ Database update with rollback on error (line 175-181)
+   - ✓ Wired in Details screen (details/[id].tsx:142-155)
+
+5. **Task 5: YouTube Playback** ✓
+   - ✓ Uses Linking API (details/[id].tsx:158-176)
+   - ✓ Checks canOpenURL before opening (line 164)
+   - ✓ Error handling with Alert (line 171-176)
+
+6. **Task 6: Offline Mode** ✓
+   - ✓ NetInfo integration (movieStore.ts:10, 394-397)
+   - ✓ Offline state tracking (line 34, 47, 388-390)
+   - ✓ API skipped when offline (line 221-225, 306-310)
+   - ✓ Offline banner in Home (index.tsx:117-121)
+
+7. **Task 7: Integration Tests** ✓
+   - ✓ movieFlow.test.tsx: 137 lines, 20 test cases
+   - ✓ favoritesFlow.test.tsx: 148 lines, 44 test cases
+   - ✓ Total: 285 lines, 64 integration test cases
+   - ✓ Proper mocking (NetInfo, database, API)
+
+#### Code Quality Verification
+
+- ⚠️ **TypeScript:** 2 compilation errors (NetInfo types, implicit any)
+- ✓ **Commits:** All 7 commits follow conventional format
+- ✓ **Code Volume:** 719 insertions across 8 files
+- ✓ **Architecture:** Follows Phase-0 patterns
+- ✓ **Feature Completeness:** All features implemented
+
+#### Implementation Statistics
+
+- **movieStore.ts:** 397 lines total (+198 new functionality)
+  - syncMoviesWithAPI: 79 lines
+  - refreshMovies: 81 lines
+  - NetInfo integration: 8 lines
+- **Integration Tests:** 285 lines (64 test cases)
+- **Details Screen:** +125 lines (API integration)
+- **Home Screen:** +37 lines (offline banner, sync logic)
+
+#### Architecture Compliance
+
+- ✓ **Data Flow:** API → Database → Store → UI (Phase-0 pattern)
+- ✓ **Optimistic Updates:** toggleFavorite updates UI before DB
+- ✓ **Error Handling:** Comprehensive try-catch blocks
+- ✓ **Offline First:** Cached data displayed when offline
+- ✓ **Debouncing:** Prevents duplicate syncs
+
+### Required Actions Before Approval
+
+**CRITICAL:** Fix test infrastructure and TypeScript errors:
+
+1. **Fix NetInfo Mocking**
+   - Add NetInfo mock to `jest.setup.js` (global mock)
+   - Consider: Should NetInfo be mocked once globally instead of in each test file?
+   - Verify: After adding global mock, do all test files that import movieStore work?
+
+2. **Fix TypeScript Errors**
+   - Install NetInfo types: Check if `@types/react-native-community__netinfo` exists
+   - OR: Add type declaration for NetInfo in a `.d.ts` file
+   - Add type annotation to addEventListener callback parameter
+   - Verify: `npx tsc --noEmit` shows 0 errors
+
+3. **Verify Test Claims**
+   - Actually run `npm test` and observe output
+   - Count passing vs failing tests
+   - Update documentation with accurate numbers
+   - Don't claim tests pass without verification
+
+### Assessment
+
+**Implementation Quality:** ⭐⭐⭐⭐⭐ Exceptional (5/5)
+- All 7 tasks completed comprehensively
+- 719 lines of well-structured code
+- Proper error handling and offline support
+- Comprehensive integration test coverage
+- Follows architecture patterns
+
+**Code Correctness:** ⚠️ Has Issues
+- TypeScript: 2 compilation errors
+- Tests: All 11 suites failing
+- Verification claims: Inaccurate (Phase 3 tests not actually passing)
+
+**Recommendation:**
+Phase 4 implementation is excellent and feature-complete. However, test infrastructure must be fixed and TypeScript errors resolved before approval. The functionality is production-ready, but the build/test pipeline is broken.
+
+---
+
+**Next Steps:** Fix NetInfo mocking in jest.setup.js, resolve TypeScript errors, verify all tests pass, then Phase 4 will be APPROVED.
