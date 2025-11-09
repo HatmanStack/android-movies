@@ -1,6 +1,9 @@
 /**
  * Zustand Movie Store
  * Replaces LiveData functionality from Android app
+ *
+ * Note: Supports loading from multiple active filters simultaneously,
+ * matching Android behavior (MainActivity.java:96-105 combines results).
  */
 
 import { create } from 'zustand';
@@ -13,11 +16,7 @@ import {
   insertMovie,
   getMovieById,
 } from '../database/queries';
-
-/**
- * Filter types for movie loading
- */
-export type MovieFilter = 'popular' | 'toprated' | 'favorites' | 'all';
+import { MovieFilter } from './filterStore';
 
 /**
  * Movie Store interface
@@ -28,10 +27,9 @@ interface MovieStore {
   movies: MovieDetails[];
   loading: boolean;
   error: string | null;
-  filter: MovieFilter;
 
   // Actions
-  loadMovies: (filter: MovieFilter) => Promise<void>;
+  loadMoviesFromFilters: (filters: MovieFilter[]) => Promise<void>;
   loadPopularMovies: () => Promise<void>;
   loadTopRatedMovies: () => Promise<void>;
   loadFavoriteMovies: () => Promise<void>;
@@ -50,36 +48,53 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
   movies: [],
   loading: false,
   error: null,
-  filter: 'popular',
 
   /**
-   * Load movies based on filter
-   * Generic loader that calls appropriate database query
+   * Load movies from multiple active filters
+   * Combines results from all specified filters, matching Android behavior
+   *
+   * Android equivalent: MainActivity.java:96-105
+   * - Checks each filter independently
+   * - Combines results with list.addAll()
+   *
+   * @param filters - Array of active filters to load from
    */
-  loadMovies: async (filter: MovieFilter) => {
-    set({ loading: true, error: null, filter });
+  loadMoviesFromFilters: async (filters: MovieFilter[]) => {
+    set({ loading: true, error: null });
 
     try {
-      let movies: MovieDetails[];
+      const combinedMovies: MovieDetails[] = [];
+      const movieIds = new Set<number>(); // Track IDs to avoid duplicates
 
-      switch (filter) {
-        case 'popular':
-          movies = await getPopularMovies();
-          break;
-        case 'toprated':
-          movies = await getTopRatedMovies();
-          break;
-        case 'favorites':
-          movies = await getFavoriteMovies();
-          break;
-        case 'all':
-          movies = await getAllMovies();
-          break;
-        default:
-          movies = [];
+      // Load from each active filter and combine results
+      for (const filter of filters) {
+        let filterMovies: MovieDetails[] = [];
+
+        switch (filter) {
+          case 'popular':
+            filterMovies = await getPopularMovies();
+            break;
+          case 'toprated':
+            filterMovies = await getTopRatedMovies();
+            break;
+          case 'favorites':
+            filterMovies = await getFavoriteMovies();
+            break;
+          case 'all':
+            filterMovies = await getAllMovies();
+            break;
+        }
+
+        // Add movies, avoiding duplicates (a movie can be both popular and top-rated)
+        for (const movie of filterMovies) {
+          if (!movieIds.has(movie.id)) {
+            movieIds.add(movie.id);
+            combinedMovies.push(movie);
+          }
+        }
       }
 
-      set({ movies, loading: false });
+      set({ movies: combinedMovies, loading: false });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to load movies';
@@ -92,7 +107,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
    * Replaces: loadPopular() DAO query + LiveData update
    */
   loadPopularMovies: async () => {
-    await get().loadMovies('popular');
+    await get().loadMoviesFromFilters(['popular']);
   },
 
   /**
@@ -100,7 +115,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
    * Replaces: loadTopRated() DAO query + LiveData update
    */
   loadTopRatedMovies: async () => {
-    await get().loadMovies('toprated');
+    await get().loadMoviesFromFilters(['toprated']);
   },
 
   /**
@@ -108,7 +123,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
    * Replaces: loadFavorites() DAO query + LiveData update
    */
   loadFavoriteMovies: async () => {
-    await get().loadMovies('favorites');
+    await get().loadMoviesFromFilters(['favorites']);
   },
 
   /**
@@ -116,7 +131,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
    * Replaces: getAll() DAO query + LiveData update
    */
   loadAllMovies: async () => {
-    await get().loadMovies('all');
+    await get().loadMoviesFromFilters(['all']);
   },
 
   /**
@@ -148,11 +163,6 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
     try {
       // Update database
       await insertMovie({ ...movie, favorite: newFavoriteStatus });
-
-      // If we're viewing favorites and just unfavorited, remove from list
-      if (get().filter === 'favorites' && !newFavoriteStatus) {
-        set({ movies: movies.filter((m) => m.id !== movieId) });
-      }
     } catch (error) {
       // Rollback on error
       set({ movies });

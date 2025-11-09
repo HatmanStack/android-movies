@@ -1,10 +1,14 @@
 /**
  * Zustand Filter Store
  * Replaces SharedPreferences for filter preferences
+ *
+ * Note: Multiple filters can be active simultaneously, matching Android behavior.
+ * The Android app combines results from all active filters (MainActivity.java:96-105).
  */
 
 import { create } from 'zustand';
-import { MovieFilter } from './movieStore';
+
+export type MovieFilter = 'popular' | 'toprated' | 'favorites' | 'all';
 
 /**
  * Filter Store interface
@@ -20,8 +24,7 @@ interface FilterStore {
   togglePopular: () => void;
   toggleTopRated: () => void;
   toggleFavorites: () => void;
-  getActiveFilter: () => MovieFilter;
-  setActiveFilter: (filter: MovieFilter) => void;
+  getActiveFilters: () => MovieFilter[];
 }
 
 /**
@@ -29,78 +32,58 @@ interface FilterStore {
  * Replaces SharedPreferences from Android app
  */
 export const useFilterStore = create<FilterStore>((set, get) => ({
-  // Initial state (matches Android defaults)
+  // Initial state (matches Android defaults from MainActivity.java)
+  // Default: showPopular=true, showTopRated=true, showFavorites=false
   showPopular: true,
   showTopRated: true,
   showFavorites: false,
 
   /**
    * Toggle popular movies filter
-   * When toggled on, sets other filters off
+   * Filters can be toggled independently (multiple can be active)
    */
   togglePopular: () => {
-    const current = get().showPopular;
-    set({
-      showPopular: !current,
-      showTopRated: current, // If turning on popular, turn off others
-      showFavorites: current,
-    });
+    set((state) => ({ showPopular: !state.showPopular }));
   },
 
   /**
    * Toggle top-rated movies filter
-   * When toggled on, sets other filters off
+   * Filters can be toggled independently (multiple can be active)
    */
   toggleTopRated: () => {
-    const current = get().showTopRated;
-    set({
-      showPopular: current, // If turning on toprated, turn off others
-      showTopRated: !current,
-      showFavorites: current,
-    });
+    set((state) => ({ showTopRated: !state.showTopRated }));
   },
 
   /**
    * Toggle favorites filter
-   * When toggled on, sets other filters off
+   * Filters can be toggled independently (multiple can be active)
    */
   toggleFavorites: () => {
-    const current = get().showFavorites;
-    set({
-      showPopular: current, // If turning on favorites, turn off others
-      showTopRated: current,
-      showFavorites: !current,
-    });
+    set((state) => ({ showFavorites: !state.showFavorites }));
   },
 
   /**
-   * Get the currently active filter
-   * Returns which filter is currently enabled
+   * Get all currently active filters
+   * Returns array of active filter types for combining results
    *
-   * @returns Active filter type
+   * Matches Android behavior: MainActivity.java checks each filter independently
+   * and combines results with list.addAll()
+   *
+   * @returns Array of active filter types
    */
-  getActiveFilter: (): MovieFilter => {
+  getActiveFilters: (): MovieFilter[] => {
     const { showPopular, showTopRated, showFavorites } = get();
+    const activeFilters: MovieFilter[] = [];
 
-    if (showFavorites) return 'favorites';
-    if (showTopRated) return 'toprated';
-    if (showPopular) return 'popular';
+    if (showPopular) activeFilters.push('popular');
+    if (showTopRated) activeFilters.push('toprated');
+    if (showFavorites) activeFilters.push('favorites');
 
-    // Default to popular if none selected
-    return 'popular';
-  },
+    // If no filters active, default to popular (safe fallback)
+    if (activeFilters.length === 0) {
+      activeFilters.push('popular');
+    }
 
-  /**
-   * Set active filter programmatically
-   * Updates toggle states to match the specified filter
-   *
-   * @param filter - Filter type to activate
-   */
-  setActiveFilter: (filter: MovieFilter) => {
-    set({
-      showPopular: filter === 'popular',
-      showTopRated: filter === 'toprated',
-      showFavorites: filter === 'favorites',
-    });
+    return activeFilters;
   },
 }));
