@@ -804,3 +804,156 @@ Proceed to **[Phase 4: Integration & Key Features](./Phase-4.md)** to connect th
 ---
 
 **Estimated Total Tokens for Phase 4:** ~35,000
+
+---
+
+## Review Feedback (Iteration 1)
+
+**Review Date:** 2025-11-09
+**Reviewer:** Senior Code Reviewer
+**Status:** ⚠️ CHANGES REQUIRED (Inherited Phase 2 Issue)
+
+### ❌ Critical Issue: Tests Still Not Passing (Inherited from Phase 2)
+
+> **Evidence:** Running `npm test` produces the same error as Phase 2:
+> ```
+> Test Suites: 9 failed, 9 total
+> ReferenceError: You are trying to `import` a file outside of the scope of the test code.
+> at Runtime._execModule (node_modules/jest-runtime/build/index.js:1216:13)
+> at require (node_modules/expo/src/winter/runtime.native.ts:20:43)
+> ```
+>
+> **Consider:** Phase 2 review feedback (line 957) identified this as a CRITICAL issue requiring fix before approval. Was this issue addressed before starting Phase 3?
+>
+> **Think about:** You wrote 65 new component tests (MovieCard: 30, VideoCard: 15, ReviewCard: 20) totaling 374 lines of test code. How do you know these tests are correct if they can't run?
+>
+> **Reflect:** The Phase 2 review suggested: "Research Expo Winter compatibility with jest-expo. Update jest.config.js or jest.setup.js to resolve import errors." Was any investigation done? What did you discover?
+>
+> **Investigate:** Check the Expo SDK 54 release notes and jest-expo documentation. Is there a known issue with Expo Winter + jest-expo? Do other Expo projects successfully run tests with this setup?
+
+### ⚠️ Major Issue: ESLint Still Not Working (Inherited from Phase 2)
+
+> **Evidence:** Phase 2 review identified ESLint v9 compatibility issue. Running `npm run lint` still fails.
+>
+> **Consider:** The Phase 3 verification checklist (line 768) requires "ESLint shows no errors". Can you verify code quality if the linter doesn't run?
+>
+> **Think about:** You wrote 1,736 new lines of code. How do you ensure code quality standards without a working linter?
+
+### ✅ Excellent Implementation Quality
+
+Despite the inherited test infrastructure issues, the Phase 3 implementation itself is **outstanding**:
+
+#### Task Completion (7/7 tasks - 100%)
+
+1. **Task 1: Navigation** ✓
+   - ✓ Expo Router configured with Stack navigator (verified app/_layout.tsx:52-90)
+   - ✓ Material Design theme matches Android (primary: #1976D2, verified _layout.tsx:18-26)
+   - ✓ All three screens created (index.tsx, details/[id].tsx, filter.tsx)
+   - ✓ Screen options configured with animations (_layout.tsx:56-87)
+
+2. **Task 2: Reusable Components** ✓
+   - ✓ MovieCard: 116 lines, memoized, uses expo-image (verified MovieCard.tsx:21)
+   - ✓ VideoCard: 93 lines, horizontal layout, play icon overlay (verified VideoCard.tsx:21)
+   - ✓ ReviewCard: 79 lines, expandable content with "Read more" (verified ReviewCard.tsx:18-57)
+   - ✓ LoadingSpinner: 59 lines, overlay support (verified LoadingSpinner.tsx:20)
+   - ✓ ErrorMessage: 91 lines, retry button (verified ErrorMessage.tsx:21)
+   - ✓ All TypeScript typed with exported interfaces
+
+3. **Task 3: Home Screen** ✓
+   - ✓ 2-column grid with FlatList (verified index.tsx:120)
+   - ✓ Pull-to-refresh implemented (index.tsx:122-129)
+   - ✓ FAB for filter navigation (index.tsx:141-146)
+   - ✓ Performance optimizations (removeClippedSubviews, windowSize, etc., index.tsx:131-134)
+   - ✓ Loading, error, and empty states (index.tsx:68-110)
+   - ✓ Integrates with filter store (index.tsx:25-30)
+
+4. **Task 4: Details Screen** ✓
+   - ✓ Movie header with large poster (verified details/[id].tsx:116-133)
+   - ✓ Favorite toggle with optimistic update (details/[id].tsx:68-81)
+   - ✓ Horizontal trailers section with FlatList (details/[id].tsx:178-192)
+   - ✓ Vertical reviews section (details/[id].tsx:197-210)
+   - ✓ Metadata display (rating, date, language) (details/[id].tsx:143-167)
+   - ✓ Loading and error states (details/[id].tsx:96-108)
+
+5. **Task 5: Filter Screen** ✓
+   - ✓ Three filter switches (Popular, Top Rated, Favorites) (verified filter.tsx:38-78)
+   - ✓ Wired to filter store (filter.tsx:13-18)
+   - ✓ Material Design List components (filter.tsx:35-79)
+   - ✓ Info text explaining multi-filter behavior (filter.tsx:84-88)
+
+6. **Task 6: Animations** ✓
+   - ✓ Screen transitions configured (_layout.tsx:63-86):
+     - Details: slide_from_right, 300ms
+     - Filter: slide_from_bottom (modal), 300ms
+   - ✓ MovieCard press feedback (MovieCard.tsx:30-33, scale: 0.95)
+   - ✓ Image fade-in with expo-image (MovieCard.tsx:41, transition={200})
+
+7. **Task 7: Component Tests** ✓
+   - ✓ MovieCard.test.tsx: 141 lines, 30 test cases
+   - ✓ VideoCard.test.tsx: 115 lines, 15 test cases
+   - ✓ ReviewCard.test.tsx: 118 lines, 20 test cases
+   - ✓ Total: 65 component tests, 374 lines
+   - ✓ Uses React Native Testing Library
+   - ✓ Mocks expo-image and PaperProvider
+
+#### Code Quality Verification
+
+- ✓ **TypeScript:** 0 compilation errors (verified via `npx tsc --noEmit`)
+- ✓ **Commits:** All 7 commits follow conventional format (verified via git log)
+- ✓ **File Structure:** All expected files created (16 files changed)
+- ✓ **Code Volume:** 1,736 insertions, 204 deletions (comprehensive implementation)
+- ✓ **Component Memoization:** MovieCard and VideoCard use React.memo (verified)
+- ✓ **Accessibility:** FlatList has accessibility labels (index.tsx:136-137)
+
+#### Architecture Compliance
+
+- ✓ **Phase-0 ADR-006 (UI Components):** Uses React Native Paper throughout
+- ✓ **Phase-0 ADR-007 (Navigation):** Uses Expo Router file-based routing
+- ✓ **Separation of Concerns:** Components, screens, and stores properly separated
+- ✓ **Performance:** FlatList optimizations applied (windowSize, maxToRenderPerBatch)
+
+#### Phase 2 Fixes Applied ✓
+
+> **Excellent work!** Commit 13bf788 successfully addressed Phase 2 review feedback:
+>
+> ✅ **Fixed:** Filter store now allows multiple active filters (filterStore.ts:45-63)
+> ✅ **Fixed:** Toggle logic no longer inverted - independent toggles (filterStore.ts:45-63)
+> ✅ **Fixed:** movieStore.loadMoviesFromFilters() combines results (movieStore.ts:64-105)
+> ✅ **Fixed:** Deduplicates movies appearing in multiple filters (movieStore.ts:91-96)
+> ✅ **Added:** Test coverage for multi-filter behavior (+6 net new tests)
+>
+> The multi-filter implementation correctly matches Android MainActivity.java:96-105 behavior.
+
+### Required Actions Before Approval
+
+**CRITICAL:** The test infrastructure issue from Phase 2 MUST be resolved:
+
+1. **Fix Jest/Expo Winter Configuration**
+   - Research Expo SDK 54 + jest-expo compatibility
+   - Check jest.config.js transformIgnorePatterns
+   - Investigate jest.setup.js mocking strategy
+   - Consider: Does jest.setup.js need to mock Expo Winter runtime?
+   - Verify: `npm test` runs without ReferenceError
+
+2. **Fix ESLint Configuration**
+   - Either migrate to eslint.config.js (ESLint v9) OR downgrade to ESLint v8
+   - Verify: `npm run lint` executes successfully
+
+### Assessment
+
+**Implementation Quality:** ⭐⭐⭐⭐⭐ Exceptional (5/5)
+- All 7 tasks completed meticulously
+- Code is well-structured, typed, and memoized
+- UI matches Android app design
+- Comprehensive test coverage (once tests can run)
+
+**Process Compliance:** ⚠️ Incomplete
+- Phase 2 critical issues should have been resolved before starting Phase 3
+- Cannot verify test correctness without running tests
+
+**Recommendation:**
+Phase 3 implementation is **excellent** and ready for use. However, the inherited test infrastructure issue prevents full approval. Fix the Jest configuration so tests can run, then Phase 3 can be approved.
+
+---
+
+**Next Steps:** Fix Jest/Expo Winter issue, verify all 92 total tests pass (65 component + 27 from previous phases), then Phase 3 is APPROVED.
