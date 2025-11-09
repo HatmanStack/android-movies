@@ -17,7 +17,7 @@ import {
   insertMovie,
   getMovieById,
 } from '../database/queries';
-import { MovieFilter } from './filterStore';
+import { MovieFilter, useFilterStore } from './filterStore';
 import { TMDbService } from '../api/tmdb';
 import { TMDbMovie } from '../api/types';
 import { formatError, logError } from '../utils/errorHandler';
@@ -236,6 +236,18 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
     set({ syncing: true, loading: true, error: null });
 
     try {
+      // Fetch popular movies and top-rated TV shows in parallel
+      const [popularResponse, topRatedResponse] = await Promise.all([
+        TMDbService.getPopularMovies(),
+        TMDbService.getTopRatedTV(),
+      ]);
+
+      // Get all existing movies from database to preserve favorites
+      const existingMovies = await getAllMovies();
+      const existingFavorites = new Map(
+        existingMovies.map(m => [m.id, m.favorite])
+      );
+
       // Helper function to map TMDb API response to MovieDetails
       const mapTMDbToMovieDetails = (
         movie: TMDbMovie,
@@ -251,16 +263,10 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
         vote_count: movie.vote_count,
         popularity: movie.popularity,
         original_language: movie.original_language,
-        favorite: false, // Not favorited by default
+        favorite: existingFavorites.get(movie.id) || false, // Preserve existing favorite status
         toprated,
         popular,
       });
-
-      // Fetch popular movies and top-rated TV shows in parallel
-      const [popularResponse, topRatedResponse] = await Promise.all([
-        TMDbService.getPopularMovies(),
-        TMDbService.getTopRatedTV(),
-      ]);
 
       // Map and insert popular movies
       const popularMovies = popularResponse.results.map((movie) =>
@@ -280,12 +286,9 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
         await insertMovie(movie);
       }
 
-      // Load movies from database and update store
-      const filters = get().movies.length > 0
-        ? ['popular', 'toprated'] as MovieFilter[]
-        : ['popular', 'toprated'] as MovieFilter[];
-
-      await get().loadMoviesFromFilters(filters);
+      // Load movies from database using active filters
+      const activeFilters = useFilterStore.getState().getActiveFilters();
+      await get().loadMoviesFromFilters(activeFilters);
 
       set({ syncing: false, loading: false });
     } catch (error) {
@@ -365,12 +368,9 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
         await insertMovie(movie);
       }
 
-      // Reload movies from database
-      const filters = get().movies.length > 0
-        ? ['popular', 'toprated'] as MovieFilter[]
-        : ['popular', 'toprated'] as MovieFilter[];
-
-      await get().loadMoviesFromFilters(filters);
+      // Reload movies from database using active filters
+      const activeFilters = useFilterStore.getState().getActiveFilters();
+      await get().loadMoviesFromFilters(activeFilters);
 
       set({ syncing: false, loading: false });
     } catch (error) {

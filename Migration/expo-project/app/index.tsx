@@ -24,7 +24,10 @@ export default function HomeScreen(): React.JSX.Element {
   const refreshMovies = useMovieStore((state) => state.refreshMovies);
   const clearError = useMovieStore((state) => state.clearError);
 
-  // Subscribe to filter store state
+  // Subscribe to filter store state - subscribe to actual values, not just the function
+  const showPopular = useFilterStore((state) => state.showPopular);
+  const showTopRated = useFilterStore((state) => state.showTopRated);
+  const showFavorites = useFilterStore((state) => state.showFavorites);
   const getActiveFilters = useFilterStore((state) => state.getActiveFilters);
 
   // Initial data sync on mount and load movies when filters change
@@ -41,7 +44,7 @@ export default function HomeScreen(): React.JSX.Element {
     };
 
     initializeData();
-  }, [loadMoviesFromFilters, getActiveFilters, syncMoviesWithAPI]);
+  }, [loadMoviesFromFilters, syncMoviesWithAPI, showPopular, showTopRated, showFavorites, getActiveFilters]);
 
   // Handle pull-to-refresh
   const handleRefresh = useCallback(() => {
