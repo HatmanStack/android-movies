@@ -19,22 +19,35 @@ export default function HomeScreen(): React.JSX.Element {
   const loading = useMovieStore((state) => state.loading);
   const error = useMovieStore((state) => state.error);
   const loadMoviesFromFilters = useMovieStore((state) => state.loadMoviesFromFilters);
+  const syncMoviesWithAPI = useMovieStore((state) => state.syncMoviesWithAPI);
   const clearError = useMovieStore((state) => state.clearError);
 
   // Subscribe to filter store state
   const getActiveFilters = useFilterStore((state) => state.getActiveFilters);
 
-  // Load movies on mount and when filters change
+  // Initial data sync on mount and load movies when filters change
   useEffect(() => {
-    const activeFilters = getActiveFilters();
-    loadMoviesFromFilters(activeFilters);
-  }, [loadMoviesFromFilters, getActiveFilters]);
+    const initializeData = async () => {
+      const activeFilters = getActiveFilters();
+      await loadMoviesFromFilters(activeFilters);
+
+      // If no movies in database, sync with API
+      const currentMovies = useMovieStore.getState().movies;
+      if (currentMovies.length === 0) {
+        await syncMoviesWithAPI();
+      }
+    };
+
+    initializeData();
+  }, [loadMoviesFromFilters, getActiveFilters, syncMoviesWithAPI]);
+
+  // Get refreshMovies action
+  const refreshMovies = useMovieStore((state) => state.refreshMovies);
 
   // Handle pull-to-refresh
   const handleRefresh = useCallback(() => {
-    const activeFilters = getActiveFilters();
-    loadMoviesFromFilters(activeFilters);
-  }, [loadMoviesFromFilters, getActiveFilters]);
+    refreshMovies();
+  }, [refreshMovies]);
 
   // Handle movie card press - navigate to details
   const handleMoviePress = useCallback((movieId: number) => {

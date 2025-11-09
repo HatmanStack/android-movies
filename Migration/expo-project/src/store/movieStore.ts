@@ -17,6 +17,8 @@ import {
   getMovieById,
 } from '../database/queries';
 import { MovieFilter } from './filterStore';
+import { TMDbService } from '../api/tmdb';
+import { TMDbMovie } from '../api/types';
 
 /**
  * Movie Store interface
@@ -27,6 +29,7 @@ interface MovieStore {
   movies: MovieDetails[];
   loading: boolean;
   error: string | null;
+  syncing: boolean;
 
   // Actions
   loadMoviesFromFilters: (filters: MovieFilter[]) => Promise<void>;
@@ -37,6 +40,8 @@ interface MovieStore {
   toggleFavorite: (movieId: number) => Promise<void>;
   refreshMovie: (movieId: number) => Promise<void>;
   clearError: () => void;
+  syncMoviesWithAPI: () => Promise<void>;
+  refreshMovies: () => Promise<void>;
 }
 
 /**
@@ -48,6 +53,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
   movies: [],
   loading: false,
   error: null,
+  syncing: false,
 
   /**
    * Load movies from multiple active filters
@@ -195,5 +201,165 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
    */
   clearError: () => {
     set({ error: null });
+  },
+
+  /**
+   * Sync movies with TMDb API
+   * Fetches popular movies and top-rated TV shows from API and stores in database
+   * Only runs if not already syncing (debouncing)
+   *
+   * Replaces Android's GetWebData.java data sync pattern
+   */
+  syncMoviesWithAPI: async () => {
+    const { syncing } = get();
+
+    // Prevent duplicate syncs
+    if (syncing) {
+      console.log('Sync already in progress, skipping...');
+      return;
+    }
+
+    set({ syncing: true, loading: true, error: null });
+
+    try {
+      // Helper function to map TMDb API response to MovieDetails
+      const mapTMDbToMovieDetails = (
+        movie: TMDbMovie,
+        popular: boolean,
+        toprated: boolean
+      ): MovieDetails => ({
+        id: movie.id,
+        title: movie.title || movie.name || '',
+        overview: movie.overview,
+        poster_path: movie.poster_path || '',
+        release_date: movie.release_date || movie.first_air_date || '',
+        vote_average: movie.vote_average,
+        vote_count: movie.vote_count,
+        popularity: movie.popularity,
+        original_language: movie.original_language,
+        favorite: false, // Not favorited by default
+        toprated,
+        popular,
+      });
+
+      // Fetch popular movies and top-rated TV shows in parallel
+      const [popularResponse, topRatedResponse] = await Promise.all([
+        TMDbService.getPopularMovies(),
+        TMDbService.getTopRatedTV(),
+      ]);
+
+      // Map and insert popular movies
+      const popularMovies = popularResponse.results.map((movie) =>
+        mapTMDbToMovieDetails(movie, true, false)
+      );
+
+      // Map and insert top-rated TV shows
+      const topRatedMovies = topRatedResponse.results.map((movie) =>
+        mapTMDbToMovieDetails(movie, false, true)
+      );
+
+      // Combine all movies
+      const allMovies = [...popularMovies, ...topRatedMovies];
+
+      // Insert into database (will replace existing movies with same ID)
+      for (const movie of allMovies) {
+        await insertMovie(movie);
+      }
+
+      // Load movies from database and update store
+      const filters = get().movies.length > 0
+        ? ['popular', 'toprated'] as MovieFilter[]
+        : ['popular', 'toprated'] as MovieFilter[];
+
+      await get().loadMoviesFromFilters(filters);
+
+      set({ syncing: false, loading: false });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? `Failed to sync with API: ${error.message}`
+          : 'Failed to sync with API';
+      set({ error: errorMessage, syncing: false, loading: false });
+    }
+  },
+
+  /**
+   * Refresh movies from TMDb API
+   * Similar to syncMoviesWithAPI but preserves user's favorite status
+   * Called by pull-to-refresh
+   */
+  refreshMovies: async () => {
+    const { syncing } = get();
+
+    // Prevent duplicate refreshes
+    if (syncing) {
+      console.log('Refresh already in progress, skipping...');
+      return;
+    }
+
+    set({ syncing: true, loading: true, error: null });
+
+    try {
+      // Get current favorites to preserve them
+      const currentFavorites = await getFavoriteMovies();
+      const favoriteIds = new Set(currentFavorites.map((m) => m.id));
+
+      // Helper function to map TMDb API response to MovieDetails
+      const mapTMDbToMovieDetails = (
+        movie: TMDbMovie,
+        popular: boolean,
+        toprated: boolean
+      ): MovieDetails => ({
+        id: movie.id,
+        title: movie.title || movie.name || '',
+        overview: movie.overview,
+        poster_path: movie.poster_path || '',
+        release_date: movie.release_date || movie.first_air_date || '',
+        vote_average: movie.vote_average,
+        vote_count: movie.vote_count,
+        popularity: movie.popularity,
+        original_language: movie.original_language,
+        favorite: favoriteIds.has(movie.id), // Preserve favorite status
+        toprated,
+        popular,
+      });
+
+      // Fetch fresh data from API
+      const [popularResponse, topRatedResponse] = await Promise.all([
+        TMDbService.getPopularMovies(),
+        TMDbService.getTopRatedTV(),
+      ]);
+
+      // Map and insert movies (preserving favorites)
+      const popularMovies = popularResponse.results.map((movie) =>
+        mapTMDbToMovieDetails(movie, true, false)
+      );
+
+      const topRatedMovies = topRatedResponse.results.map((movie) =>
+        mapTMDbToMovieDetails(movie, false, true)
+      );
+
+      const allMovies = [...popularMovies, ...topRatedMovies];
+
+      // Update database
+      for (const movie of allMovies) {
+        await insertMovie(movie);
+      }
+
+      // Reload movies from database
+      const filters = get().movies.length > 0
+        ? ['popular', 'toprated'] as MovieFilter[]
+        : ['popular', 'toprated'] as MovieFilter[];
+
+      await get().loadMoviesFromFilters(filters);
+
+      set({ syncing: false, loading: false });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? `Failed to refresh movies: ${error.message}`
+          : 'Failed to refresh movies';
+      set({ error: errorMessage, syncing: false, loading: false });
+    }
   },
 }));
