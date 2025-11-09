@@ -1,25 +1,28 @@
 {
   "expo": {
-    "name": "expo-project",
-    "slug": "expo-project",
+    "name": "Movies",
+    "slug": "movies-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expoproject",
+    "scheme": "movies",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "Discover popular movies and TV shows from TMDb",
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1976D2"
     },
     "ios": {
+      "bundleIdentifier": "com.movies.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.movies.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1976D2"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
