@@ -2,7 +2,6 @@
   "expo": {
     "name": "Movies",
     "slug": "movies-app",
-    "owner": "your-expo-username",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

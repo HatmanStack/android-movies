@@ -184,13 +184,23 @@ For production builds, set environment variables in `eas.json`:
 }
 ```
 
-**Security Note:** For sensitive values, use EAS Secrets:
+**⚠️ Security Warning: EXPO_PUBLIC_* Variables Are Always Public**
+
+Any variable prefixed with `EXPO_PUBLIC_` is bundled into your JavaScript code and is **publicly accessible** to anyone who downloads your app. These values can be extracted by reverse-engineering the app bundle.
+
+**For API Keys:**
+- TMDb and YouTube API keys in this project are **intentionally public** and rate-limited per-app
+- For truly sensitive credentials, **never use EXPO_PUBLIC_*** prefix
+- Instead, create a backend API that proxies requests and keeps secrets server-side
+
+**For Private Secrets (Non-Public Build Values):**
+If you need private environment variables (without `EXPO_PUBLIC_` prefix) for build-time use:
 ```bash
-eas secret:create --scope project --name EXPO_PUBLIC_TMDB_API_KEY --value your_key
-eas secret:create --scope project --name EXPO_PUBLIC_YOUTUBE_API_KEY --value your_key
+# Only for non-public secrets (no EXPO_PUBLIC_ prefix)
+eas secret:create --scope project --name PRIVATE_BUILD_KEY --value your_secret
 ```
 
-Then remove from `eas.json`.
+Then remove from `eas.json` and access via `process.env.PRIVATE_BUILD_KEY` during build only.
 
 ## Build Optimization
 
