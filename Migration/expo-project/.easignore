@@ -1,0 +1,45 @@
+# EAS Build Ignore File
+# Files and directories listed here will not be uploaded to EAS Build
+
+# Tests
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+jest.config.js
+jest.setup.js
+
+# Development files
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Documentation
+*.md
+!README.md
+Migration/docs/
+
+# Build artifacts
+node_modules/
+.expo/
+dist/
+web-build/
+coverage/
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
