@@ -5,8 +5,10 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MovieDetails, VideoDetails, ReviewDetails } from '../../src/models/types';
-import { getMovieById, getTrailersForMovie, getReviewsForMovie } from '../../src/database/queries';
+import { getMovieById, getTrailersForMovie, getReviewsForMovie, insertVideo, insertReview } from '../../src/database/queries';
 import { useMovieStore } from '../../src/store/movieStore';
+import { TMDbService } from '../../src/api/tmdb';
+import { YouTubeService } from '../../src/api/youtube';
 import VideoCard from '../../src/components/VideoCard';
 import ReviewCard from '../../src/components/ReviewCard';
 import LoadingSpinner from '../../src/components/LoadingSpinner';
@@ -37,20 +39,92 @@ export default function DetailsScreen(): React.JSX.Element {
     setError(null);
 
     try {
-      // Load movie details
+      // Load movie details from database
       const movieData = await getMovieById(movieId);
+      if (movieData) {
+        setMovie(movieData);
+      }
+
+      // Load trailers from database
+      let trailersData = await getTrailersForMovie(movieId);
+
+      // If no trailers in database, fetch from API
+      if (trailersData.length === 0) {
+        try {
+          const videosResponse = await TMDbService.getMovieVideos(movieId);
+
+          // Map and insert videos into database
+          for (const video of videosResponse.results) {
+            // Fetch YouTube thumbnail
+            const thumbnailUrl = await YouTubeService.getVideoThumbnail(video.key);
+
+            const videoDetails: Omit<VideoDetails, 'identity'> = {
+              id: movieId,
+              image_url: thumbnailUrl,
+              iso_639_1: video.iso_639_1,
+              iso_3166_1: video.iso_3166_1,
+              key: video.key,
+              site: video.site,
+              size: video.size.toString(),
+              type: video.type,
+            };
+
+            await insertVideo(videoDetails);
+          }
+
+          // Reload trailers from database
+          trailersData = await getTrailersForMovie(movieId);
+        } catch (apiError) {
+          console.warn('Failed to fetch videos from API:', apiError);
+          // Continue with empty trailers
+        }
+      } else {
+        // Update thumbnails if missing
+        for (const trailer of trailersData) {
+          if (!trailer.image_url || trailer.image_url === '') {
+            const thumbnailUrl = await YouTubeService.getVideoThumbnail(trailer.key);
+            await insertVideo({ ...trailer, image_url: thumbnailUrl });
+          }
+        }
+        // Reload to get updated thumbnails
+        trailersData = await getTrailersForMovie(movieId);
+      }
+
+      setTrailers(trailersData);
+
+      // Load reviews from database
+      let reviewsData = await getReviewsForMovie(movieId);
+
+      // If no reviews in database, fetch from API
+      if (reviewsData.length === 0) {
+        try {
+          const reviewsResponse = await TMDbService.getMovieReviews(movieId);
+
+          // Map and insert reviews into database
+          for (const review of reviewsResponse.results) {
+            const reviewDetails: Omit<ReviewDetails, 'identity'> = {
+              id: movieId,
+              author: review.author,
+              content: review.content,
+            };
+
+            await insertReview(reviewDetails);
+          }
+
+          // Reload reviews from database
+          reviewsData = await getReviewsForMovie(movieId);
+        } catch (apiError) {
+          console.warn('Failed to fetch reviews from API:', apiError);
+          // Continue with empty reviews
+        }
+      }
+
+      setReviews(reviewsData);
+
+      // If movie not found in database and not fetched from API yet, show error
       if (!movieData) {
         throw new Error(`Movie with ID ${movieId} not found in database`);
       }
-      setMovie(movieData);
-
-      // Load trailers
-      const trailersData = await getTrailersForMovie(movieId);
-      setTrailers(trailersData);
-
-      // Load reviews
-      const reviewsData = await getReviewsForMovie(movieId);
-      setReviews(reviewsData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load movie details';
       setError(errorMessage);
