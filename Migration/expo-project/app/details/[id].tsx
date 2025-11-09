@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, FlatList } from 'react-native';
+import { View, StyleSheet, ScrollView, FlatList, Linking, Alert } from 'react-native';
 import { Text, IconButton, Divider } from 'react-native-paper';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
@@ -154,10 +154,33 @@ export default function DetailsScreen(): React.JSX.Element {
     }
   }, [movie, movieId, toggleFavorite]);
 
-  // Handle trailer press (placeholder for Phase 4)
-  const handleTrailerPress = useCallback((videoKey: string) => {
-    console.log('Trailer pressed:', videoKey);
-    // TODO: Open YouTube video in WebView or external browser (Phase 4)
+  // Handle trailer press - open YouTube video
+  const handleTrailerPress = useCallback(async (videoKey: string) => {
+    try {
+      // Get YouTube watch URL
+      const youtubeUrl = YouTubeService.getWatchUrl(videoKey);
+
+      // Check if can open URL
+      const canOpen = await Linking.canOpenURL(youtubeUrl);
+
+      if (canOpen) {
+        // Open YouTube app or browser
+        await Linking.openURL(youtubeUrl);
+      } else {
+        Alert.alert(
+          'Cannot Open Video',
+          'Unable to open YouTube video. Please check if YouTube is installed.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error opening YouTube video:', error);
+      Alert.alert(
+        'Error',
+        'Failed to open video. Please try again later.',
+        [{ text: 'OK' }]
+      );
+    }
   }, []);
 
   // Render trailer item
