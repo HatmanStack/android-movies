@@ -20,6 +20,7 @@ import {
 import { MovieFilter } from './filterStore';
 import { TMDbService } from '../api/tmdb';
 import { TMDbMovie } from '../api/types';
+import { formatError, logError } from '../utils/errorHandler';
 
 /**
  * Movie Store interface
@@ -106,9 +107,9 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
 
       set({ movies: combinedMovies, loading: false });
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to load movies';
-      set({ error: errorMessage, loading: false, movies: [] });
+      logError(error, 'loadMoviesFromFilters');
+      const formatted = formatError(error);
+      set({ error: formatted.message, loading: false, movies: [] });
     }
   },
 
@@ -176,8 +177,9 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
     } catch (error) {
       // Rollback on error
       set({ movies });
-      const errorMessage = `Failed to toggle favorite: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      set({ error: errorMessage });
+      logError(error, 'toggleFavorite');
+      const formatted = formatError(error);
+      set({ error: `Failed to toggle favorite: ${formatted.message}` });
     }
   },
 
@@ -195,8 +197,9 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
 
       set({ movies: updatedMovies });
     } catch (error) {
-      const errorMessage = `Failed to refresh movie: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      set({ error: errorMessage });
+      logError(error, 'refreshMovie');
+      const formatted = formatError(error);
+      set({ error: `Failed to refresh movie: ${formatted.message}` });
     }
   },
 
@@ -286,11 +289,9 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
 
       set({ syncing: false, loading: false });
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? `Failed to sync with API: ${error.message}`
-          : 'Failed to sync with API';
-      set({ error: errorMessage, syncing: false, loading: false });
+      logError(error, 'syncMoviesWithAPI');
+      const formatted = formatError(error);
+      set({ error: `Failed to sync with API: ${formatted.message}`, syncing: false, loading: false });
     }
   },
 
@@ -373,11 +374,9 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
 
       set({ syncing: false, loading: false });
     } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? `Failed to refresh movies: ${error.message}`
-          : 'Failed to refresh movies';
-      set({ error: errorMessage, syncing: false, loading: false });
+      logError(error, 'refreshMovies');
+      const formatted = formatError(error);
+      set({ error: `Failed to refresh movies: ${formatted.message}`, syncing: false, loading: false });
     }
   },
 

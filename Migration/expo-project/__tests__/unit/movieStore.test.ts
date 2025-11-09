@@ -263,7 +263,7 @@ describe('movieStore - refreshMovies', () => {
     await useMovieStore.getState().refreshMovies();
 
     const state = useMovieStore.getState();
-    expect(state.error).toBe('Failed to refresh movies');
+    expect(state.error).toContain('Failed to refresh movies');
     expect(state.syncing).toBe(false);
     expect(state.loading).toBe(false);
   });
