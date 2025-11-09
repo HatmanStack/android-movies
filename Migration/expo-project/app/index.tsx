@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { FAB, Text, Banner } from 'react-native-paper';
 import { router } from 'expo-router';
@@ -14,13 +14,14 @@ import ErrorMessage from '../src/components/ErrorMessage';
  * Replaces Android's MainActivity
  */
 export default function HomeScreen(): React.JSX.Element {
-  // Subscribe to movie store state
+  // Subscribe to movie store state (individual selectors for optimal re-rendering)
   const movies = useMovieStore((state) => state.movies);
   const loading = useMovieStore((state) => state.loading);
   const error = useMovieStore((state) => state.error);
   const isOffline = useMovieStore((state) => state.isOffline);
   const loadMoviesFromFilters = useMovieStore((state) => state.loadMoviesFromFilters);
   const syncMoviesWithAPI = useMovieStore((state) => state.syncMoviesWithAPI);
+  const refreshMovies = useMovieStore((state) => state.refreshMovies);
   const clearError = useMovieStore((state) => state.clearError);
 
   // Subscribe to filter store state
@@ -41,9 +42,6 @@ export default function HomeScreen(): React.JSX.Element {
 
     initializeData();
   }, [loadMoviesFromFilters, getActiveFilters, syncMoviesWithAPI]);
-
-  // Get refreshMovies action
-  const refreshMovies = useMovieStore((state) => state.refreshMovies);
 
   // Handle pull-to-refresh
   const handleRefresh = useCallback(() => {

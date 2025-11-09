@@ -80,6 +80,29 @@ export const CREATE_VERSION_TABLE = `
 `;
 
 /**
+ * Performance indexes for frequently queried columns
+ */
+export const CREATE_INDEXES = [
+  // Index for favorite movies filter
+  `CREATE INDEX IF NOT EXISTS idx_movie_favorite ON movie_details(favorite);`,
+
+  // Index for popular movies filter
+  `CREATE INDEX IF NOT EXISTS idx_movie_popular ON movie_details(popular);`,
+
+  // Index for top-rated movies filter
+  `CREATE INDEX IF NOT EXISTS idx_movie_toprated ON movie_details(toprated);`,
+
+  // Index for video lookups by movie ID
+  `CREATE INDEX IF NOT EXISTS idx_video_movie_id ON video_details(id);`,
+
+  // Index for trailer lookups (id + type)
+  `CREATE INDEX IF NOT EXISTS idx_video_trailer ON video_details(id, type);`,
+
+  // Index for review lookups by movie ID
+  `CREATE INDEX IF NOT EXISTS idx_review_movie_id ON review_details(id);`,
+];
+
+/**
  * All schema creation statements
  */
 export const SCHEMA_STATEMENTS = [
@@ -87,6 +110,7 @@ export const SCHEMA_STATEMENTS = [
   CREATE_VIDEO_DETAILS_TABLE,
   CREATE_REVIEW_DETAILS_TABLE,
   CREATE_VERSION_TABLE,
+  ...CREATE_INDEXES,
 ];
 
 /**

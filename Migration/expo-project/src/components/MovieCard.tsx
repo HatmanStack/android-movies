@@ -39,6 +39,9 @@ const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, onPress }) => {
           style={styles.poster}
           contentFit="cover"
           transition={200}
+          cachePolicy="memory-disk"
+          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+          priority="high"
         />
 
         {/* Favorite Indicator (Star Icon) */}
