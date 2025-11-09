@@ -7,7 +7,7 @@
  */
 
 import { create } from 'zustand';
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { MovieDetails } from '../models/types';
 import {
   getAllMovies,
@@ -391,7 +391,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
 }));
 
 // Subscribe to NetInfo for network status updates
-NetInfo.addEventListener((state) => {
+NetInfo.addEventListener((state: NetInfoState) => {
   const isOffline = !state.isConnected || !state.isInternetReachable;
   useMovieStore.getState().setOfflineStatus(isOffline);
 });
