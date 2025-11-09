@@ -42,7 +42,7 @@ A cross-platform mobile app for discovering popular movies and TV shows, powered
 ### Testing
 - **Jest** - Unit and integration testing
 - **@testing-library/react-native** - Component testing
-- **96%+ Test Coverage** - Comprehensive test suite
+- **87%+ Test Coverage** - 173 tests across 16 test suites
 
 ## Prerequisites
 
@@ -213,11 +213,11 @@ npm run test:watch
 
 ### Test Coverage
 
-Current coverage: **96%+** across all metrics
-- Statements: 96.08%
-- Branches: 80.76%
-- Functions: 97.29%
-- Lines: 95.93%
+Current coverage: **87%+** across core metrics (173 passing tests)
+- Statements: 87.89%
+- Branches: 65.62%
+- Functions: 88.09%
+- Lines: 87.5%
 
 ## Building for Production
 

@@ -8,7 +8,7 @@ This document summarizes the migration of the Movies app from Android (Java) to 
 **Migrated App**: Cross-platform React Native app with Expo
 **Migration Duration**: 5 phases (Planning → Core → Features → Integration → Polish)
 **Lines of Code**: ~2,000 (original) → ~3,500 (migrated, with tests)
-**Test Coverage**: 0% → 96%+
+**Test Coverage**: 0% → 87%+ (173 passing tests)
 
 ## Architecture Comparison
 
@@ -79,7 +79,7 @@ Migration/expo-project/
 │   │   └── filterStore.ts   # New feature
 │   └── utils/
 │       └── errorHandler.ts  # Centralized error handling
-└── __tests__/                # Test suite (96% coverage)
+└── __tests__/                # Test suite (87% coverage)
     ├── unit/                 # Unit tests
     └── integration/          # Integration tests
 ```
@@ -325,7 +325,7 @@ const movieId = parseInt(id as string);
 | Error Handling | Centralized error management | ErrorBoundary + errorHandler |
 | Loading States | Skeleton screens and spinners | LoadingSpinner component |
 | Type Safety | Full TypeScript coverage | TypeScript throughout |
-| Test Suite | 96%+ code coverage | Jest + RTL |
+| Test Suite | 87%+ code coverage (173 tests) | Jest + RTL |
 | OTA Updates | Push updates without store | EAS Update |
 
 ## Performance Comparison
@@ -364,7 +364,7 @@ React Native:
 
 ### React Native (Migrated)
 
-- **Comprehensive tests**: 96%+ coverage
+- **Comprehensive tests**: 87%+ coverage
   - 173 tests across 16 test suites
   - Unit tests for all stores and utilities
   - Integration tests for user flows
@@ -445,7 +445,7 @@ React Native:
 **Tests Added**: 20+
 
 ### Phase 5: Testing, Polish & Deployment
-- Increased test coverage to 96%+
+- Achieved test coverage of 87%+ (173 tests)
 - Added app icon and splash screen
 - Optimized performance
 - Enhanced error handling
@@ -514,7 +514,7 @@ const movies = useMovieStore((state) => state.movies);
 
 ### Code Quality
 - ✅ **Type Safety**: No runtime type errors
-- ✅ **Test Coverage**: 96%+ vs 0%
+- ✅ **Test Coverage**: 87%+ vs 0% (173 passing tests)
 - ✅ **Documentation**: Comprehensive guides
 - ✅ **Maintainability**: Cleaner architecture
 - ✅ **Consistency**: Enforced by linting
@@ -581,7 +581,7 @@ The migration from Android (Java) to React Native (TypeScript/Expo) was successf
 
 ✅ **Feature Parity**: All original features migrated
 ✅ **New Features**: Added filtering, better offline support, enhanced error handling
-✅ **Better Code Quality**: 96%+ test coverage vs 0%, full TypeScript
+✅ **Better Code Quality**: 87%+ test coverage vs 0%, full TypeScript
 ✅ **Cross-Platform**: iOS support for free
 ✅ **Maintainability**: Cleaner architecture, better documented
 ✅ **Developer Experience**: Hot reload, better debugging, modern tooling
