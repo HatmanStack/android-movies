@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import { PaperProvider } from 'react-native-paper';
 import HomeScreen from '../../app/index';
 import { useMovieStore } from '../../src/store/movieStore';
