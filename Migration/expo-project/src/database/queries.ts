@@ -190,6 +190,9 @@ export async function deleteMovie(movieId: number): Promise<void> {
   const db = getDatabase();
 
   try {
+    // Delete related records first to prevent orphans
+    await db.runAsync('DELETE FROM video_details WHERE id = ?', [movieId]);
+    await db.runAsync('DELETE FROM review_details WHERE id = ?', [movieId]);
     await db.runAsync('DELETE FROM movie_details WHERE id = ?', [movieId]);
   } catch (error) {
     console.error('Failed to delete movie:', error);
@@ -225,10 +228,10 @@ function mapRowToVideo(row: any): VideoDetails {
  * Insert or update a video
  * Migrates: @Insert(onConflict = OnConflictStrategy.REPLACE) void insertVideoDetails(VideoDetails videoDetails)
  *
- * @param video - Video to insert/update (identity is auto-generated if not provided)
+ * @param video - Video to insert/update (identity is auto-generated, do not provide)
  */
 export async function insertVideo(
-  video: Omit<VideoDetails, 'identity'> | VideoDetails
+  video: Omit<VideoDetails, 'identity'>
 ): Promise<void> {
   const db = getDatabase();
 
@@ -324,10 +327,10 @@ function mapRowToReview(row: any): ReviewDetails {
  * Insert or update a review
  * Migrates: @Insert(onConflict = OnConflictStrategy.REPLACE) void insertReviewDetails(ReviewDetails reviewDetails)
  *
- * @param review - Review to insert/update (identity is auto-generated if not provided)
+ * @param review - Review to insert/update (identity is auto-generated, do not provide)
  */
 export async function insertReview(
-  review: Omit<ReviewDetails, 'identity'> | ReviewDetails
+  review: Omit<ReviewDetails, 'identity'>
 ): Promise<void> {
   const db = getDatabase();
 
