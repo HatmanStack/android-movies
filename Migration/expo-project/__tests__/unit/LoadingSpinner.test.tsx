@@ -26,15 +26,12 @@ describe('LoadingSpinner', () => {
   });
 
   it('should render with overlay style', () => {
-    const { getByTestId } = render(
+    const { getByText } = render(
       <LoadingSpinner message="Loading..." overlay={true} />,
       { wrapper }
     );
 
     // Verify component renders (overlay styling is applied via styles)
-    const { getByText } = render(<LoadingSpinner message="Loading..." overlay={true} />, {
-      wrapper,
-    });
     expect(getByText('Loading...')).toBeTruthy();
   });
 
