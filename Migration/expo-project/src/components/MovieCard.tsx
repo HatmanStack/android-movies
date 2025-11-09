@@ -25,7 +25,13 @@ const MovieCard: React.FC<MovieCardProps> = React.memo(({ movie, onPress }) => {
   const posterUrl = `https://image.tmdb.org/t/p/w342${poster_path}`;
 
   return (
-    <Pressable onPress={() => onPress(id)} style={styles.pressable}>
+    <Pressable
+      onPress={() => onPress(id)}
+      style={({ pressed }) => [
+        styles.pressable,
+        pressed && styles.pressed,
+      ]}
+    >
       <Card mode="elevated" style={styles.card}>
         {/* Movie Poster */}
         <Image
@@ -67,6 +73,10 @@ const styles = StyleSheet.create({
   pressable: {
     flex: 1,
     margin: 8,
+  },
+  pressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
   },
   card: {
     borderRadius: 8,

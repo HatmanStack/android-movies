@@ -60,6 +60,7 @@ function RootLayoutNav(): React.JSX.Element {
             headerStyle: { backgroundColor: theme.colors.primary },
             headerTintColor: '#fff',
             headerTitleStyle: { fontWeight: 'bold' },
+            animation: 'default',
           }}
         />
         <Stack.Screen
@@ -69,6 +70,8 @@ function RootLayoutNav(): React.JSX.Element {
             headerStyle: { backgroundColor: theme.colors.primary },
             headerTintColor: '#fff',
             headerBackTitle: 'Back',
+            animation: 'slide_from_right',
+            animationDuration: 300,
           }}
         />
         <Stack.Screen
@@ -78,6 +81,8 @@ function RootLayoutNav(): React.JSX.Element {
             presentation: 'modal',
             headerStyle: { backgroundColor: theme.colors.primary },
             headerTintColor: '#fff',
+            animation: 'slide_from_bottom',
+            animationDuration: 300,
           }}
         />
       </Stack>
