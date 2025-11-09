@@ -7,6 +7,7 @@
  */
 
 import { create } from 'zustand';
+import NetInfo from '@react-native-community/netinfo';
 import { MovieDetails } from '../models/types';
 import {
   getAllMovies,
@@ -30,6 +31,7 @@ interface MovieStore {
   loading: boolean;
   error: string | null;
   syncing: boolean;
+  isOffline: boolean;
 
   // Actions
   loadMoviesFromFilters: (filters: MovieFilter[]) => Promise<void>;
@@ -42,6 +44,7 @@ interface MovieStore {
   clearError: () => void;
   syncMoviesWithAPI: () => Promise<void>;
   refreshMovies: () => Promise<void>;
+  setOfflineStatus: (isOffline: boolean) => void;
 }
 
 /**
@@ -54,6 +57,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
   loading: false,
   error: null,
   syncing: false,
+  isOffline: false,
 
   /**
    * Load movies from multiple active filters
@@ -211,7 +215,14 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
    * Replaces Android's GetWebData.java data sync pattern
    */
   syncMoviesWithAPI: async () => {
-    const { syncing } = get();
+    const { syncing, isOffline } = get();
+
+    // Skip sync if offline
+    if (isOffline) {
+      console.log('Offline mode: skipping API sync, using cached data');
+      set({ error: 'You are offline. Showing cached movies.' });
+      return;
+    }
 
     // Prevent duplicate syncs
     if (syncing) {
@@ -289,7 +300,14 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
    * Called by pull-to-refresh
    */
   refreshMovies: async () => {
-    const { syncing } = get();
+    const { syncing, isOffline } = get();
+
+    // Skip refresh if offline
+    if (isOffline) {
+      console.log('Offline mode: cannot refresh, showing cached data');
+      set({ error: 'Cannot refresh while offline. Showing cached movies.', loading: false });
+      return;
+    }
 
     // Prevent duplicate refreshes
     if (syncing) {
@@ -362,4 +380,18 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
       set({ error: errorMessage, syncing: false, loading: false });
     }
   },
+
+  /**
+   * Set offline status
+   * Called by NetInfo subscription
+   */
+  setOfflineStatus: (isOffline: boolean) => {
+    set({ isOffline });
+  },
 }));
+
+// Subscribe to NetInfo for network status updates
+NetInfo.addEventListener((state) => {
+  const isOffline = !state.isConnected || !state.isInternetReachable;
+  useMovieStore.getState().setOfflineStatus(isOffline);
+});

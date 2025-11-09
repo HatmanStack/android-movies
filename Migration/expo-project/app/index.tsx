@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { FAB, Text } from 'react-native-paper';
+import { FAB, Text, Banner } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useMovieStore } from '../src/store/movieStore';
 import { useFilterStore } from '../src/store/filterStore';
@@ -18,6 +18,7 @@ export default function HomeScreen(): React.JSX.Element {
   const movies = useMovieStore((state) => state.movies);
   const loading = useMovieStore((state) => state.loading);
   const error = useMovieStore((state) => state.error);
+  const isOffline = useMovieStore((state) => state.isOffline);
   const loadMoviesFromFilters = useMovieStore((state) => state.loadMoviesFromFilters);
   const syncMoviesWithAPI = useMovieStore((state) => state.syncMoviesWithAPI);
   const clearError = useMovieStore((state) => state.clearError);
@@ -126,6 +127,13 @@ export default function HomeScreen(): React.JSX.Element {
   // Show movie grid
   return (
     <View style={styles.container}>
+      {/* Offline Banner */}
+      {isOffline && (
+        <Banner visible={true} icon="wifi-off">
+          No internet connection. Showing cached data.
+        </Banner>
+      )}
+
       <FlatList
         data={movies}
         renderItem={renderMovieItem}
